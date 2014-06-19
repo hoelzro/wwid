@@ -1,0 +1,17 @@
+#!/usr/bin/env perl6
+
+use v6;
+
+sub show_help() {
+    say qq:to/END_HELP/;
+{$*PROGRAM.basename} - A todo list manager that tell you what to do
+
+Usage: {$*PROGRAM.basename} [command] [options]
+
+    help	Shows this help.
+END_HELP
+}
+
+multi MAIN(Str $?) {
+    show_help();
+}
