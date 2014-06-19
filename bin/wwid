@@ -9,7 +9,17 @@ sub show_help() {
 Usage: {$*PROGRAM.basename} [command] [options]
 
     help	Shows this help.
+    new		Create a new task
+    next	Display the next task to work on
 END_HELP
+}
+
+multi MAIN('new') {
+    say '*** STUB *** Create a new task';
+}
+
+multi MAIN('next') {
+    say '*** STUB *** Show me the next task';
 }
 
 multi MAIN(Str $?) {
