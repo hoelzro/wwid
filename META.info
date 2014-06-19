@@ -1,0 +1,8 @@
+{
+    "name": "wwid",
+    "version": "0.1.0",
+    "description": "A todo list manager that tells you what to do",
+    "author": "Rob Hoelz",
+    "depends": [],
+    "source-url": "git://github.com/hoelzro/wwid"
+}
