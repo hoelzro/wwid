@@ -20,7 +20,13 @@ our role App::Subcommander {
             return 1;
         }
 
-        %all-commands{$command}(self, |%options);
+        my $f = %all-commands{$command};
+
+        if +$f.candidates > 1 {
+            die 'multis not yet supported by App::Subcommander';
+        }
+
+        $f(self, |%options);
 
         return 0;
     }
