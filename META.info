@@ -3,6 +3,8 @@
     "version": "0.1.0",
     "description": "A todo list manager that tells you what to do",
     "author": "Rob Hoelz",
-    "depends": [],
+    "depends": [
+        'App-Subcommander'
+    ],
     "source-url": "git://github.com/hoelzro/wwid"
 }
