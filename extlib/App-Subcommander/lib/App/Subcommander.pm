@@ -8,7 +8,14 @@ our role App::Subcommander {
     }
 
     method !get-commands {
-        self.^methods.grep({ $_ ~~ Subcommand }).map({ .command-name => $_ })
+        gather {
+            for self.^methods -> $method {
+                if +$method.candidates > 1 && any($method.candidates.map({ $_ ~~ Subcommand })) {
+                    die "multis not yet supported by App::Subcommander";
+                }
+                take $method.command-name => $method if $method ~~ Subcommand;
+            }
+        }
     }
 
     method run(@args) returns int {
