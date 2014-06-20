@@ -32,7 +32,7 @@ our role App::Subcommander {
     }
 
     method show-help {
-        say 'showing help!';
+        $*ERR.say: 'showing help!';
     }
 }
 
