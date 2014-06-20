@@ -1,0 +1,36 @@
+0.01
+
+  wwid new
+  wwid next
+  wwid recalculate
+  wwid finish
+  wwid help
+  wwid import
+  value - effort algorithm
+
+Later
+
+  wwid search
+  wwid export
+  wwid checkin
+  wwid sync (sync with another instance)
+  Interactive input of missing options
+  Web application (wwid serve)
+  Android application
+  Arbitrary metadata asociated with tasks
+  Hooks for events (upon completion, etc)
+
+App-Subcommander tests:
+
+  - look at slop, https://github.com/codegangsta/cli, click
+
+  - multis
+  - keyword params (options)
+  - positions params (targets)
+  - duplicate command names (is subcommand('a'), is subcommand('a'))
+  - extra keyword/positional params
+  - show help (no command, bad command, help command w/o args)
+  - optional positional params
+  - help with a command
+  - type map stuff
+    - What about Any?
