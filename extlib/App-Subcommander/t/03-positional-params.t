@@ -43,10 +43,27 @@ ok !$needs3-called, 'needs3 should not have been called via run(["has-optional"]
 ok $has-optional-called, 'has-optional should have been called via run(["has-optional"])';
 ok !$show-help-called, 'show-help should not have been called when has-optional is given enough arguments';
 
-done();
+reset();
 
-# XXX shows help when you don't have enough
-# XXX shows help when you have too many
-# XXX make sure integer-like arguments stay as Strs
+App.new.run(['needs3', 'one', 'two']);
+
+ok !$needs3-called, 'needs3 should not have been called via run(["needs3", ...2 args...])';
+ok !$has-optional-called, 'has-optional should not have been called via run(["needs3", ...2 args...])';
+ok $show-help-called, 'show-help should have been called when needs3 is not given enough arguments';
+
+reset();
+
+App.new.run(['needs3', 'one', 'two', 'three', 'four']);
+
+ok !$needs3-called, 'needs3 should not have been called via run(["needs3", ...4 args...])';
+ok !$has-optional-called, 'has-optional should not have been called via run(["needs3", ...4 args...])';
+ok $show-help-called, 'show-help should have been called when needs3 is given too many arguments';
+
+reset();
+
+# XXX make sure integer-like arguments stay as Strs (when type is Any)
 # XXX make sure optional processing works
 # XXX make sure exceptions propagate
+# XXX coercion?
+
+done();
