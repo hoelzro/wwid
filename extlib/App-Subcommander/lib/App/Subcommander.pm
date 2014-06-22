@@ -3,37 +3,85 @@ my role Subcommand {
 }
 
 our role App::Subcommander {
-    method !parse-command-line(@args) {
-        ( @args[0], {} )
+    method !is-option($arg) {
+        $arg ~~ /^ '-'/
+    }
+
+    method !is-option-terminator($arg) {
+        $arg eq '--'
+    }
+
+    method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
+        my %command-options;
+        my %app-options;
+        my @command-args;
+        my $subcommand;
+        my @copy = @args;
+
+        while @copy {
+            my $arg = @copy.shift;
+
+            if self!is-option-terminator($arg) {
+                if $subcommand.defined {
+                    @command-args.push: @copy;
+                } else {
+                    ( $subcommand, @command-args ) = @copy;
+                    $subcommand = self!get-commands(){$subcommand};
+                    if $subcommand !~~ Subcommand {
+                        return;
+                    }
+                }
+                return
+            } elsif self!is-option($arg) {
+                # XXX impl
+            } else {
+                if $subcommand.defined {
+                    @command-args.push: $arg;
+                } else {
+                    $subcommand = $arg;
+                    $subcommand = self!get-commands(){$subcommand};
+                    if $subcommand !~~ Subcommand {
+                        return;
+                    }
+                }
+            }
+        }
+        return ( $subcommand, @command-args.item, %app-options.item, %command-options.item );
     }
 
     method !get-commands {
-        gather {
+        my %result = gather {
             for self.^methods -> $method {
                 if +$method.candidates > 1 && any($method.candidates.map({ $_ ~~ Subcommand })) {
                     die "multis not yet supported by App::Subcommander";
                 }
                 take $method.command-name => $method if $method ~~ Subcommand;
             }
-        }
+        };
+        return %result.item;
     }
 
     method run(@args) returns int {
-        my ( $command, %options ) = self!parse-command-line(@args);
-        my %all-commands = self!get-commands;
+        my ( $command, $args, $app-options, $cmd-options ) = self!parse-command-line(@args);
 
-        unless $command.defined && (%all-commands{$command}:exists) {
+        unless $command.defined {
             self.show-help;
             return 1;
         }
 
-        my $f = %all-commands{$command};
-
-        if +$f.candidates > 1 {
+        if +$command.candidates > 1 {
             die 'multis not yet supported by App::Subcommander';
         }
 
-        $f(self, |%options);
+        try {
+            $command(self, |@($args), |%($cmd-options));
+
+            CATCH {
+                when $_ ~~ X::AdHoc && /"Not enough"|"Too many" positional parameters/ {
+                    self.show-help;
+                }
+            }
+        }
 
         return 0;
     }
