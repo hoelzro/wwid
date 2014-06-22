@@ -77,7 +77,7 @@ our role App::Subcommander {
             $command(self, |@($args), |%($cmd-options));
 
             CATCH {
-                when $_ ~~ X::AdHoc && /"Not enough"|"Too many" positional parameters/ {
+                when $_ ~~ X::AdHoc && /["Not enough"|"Too many"] " positional parameters"/ {
                     self.show-help;
                 }
             }
