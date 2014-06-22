@@ -26,11 +26,11 @@ App-Subcommander tests:
 
   - multis
   - keyword params (options)
-  - positions params (targets)
-  - duplicate command names (is subcommand('a'), is subcommand('a'))
-  - extra keyword/positional params
+  - extra keyword
   - show help (no command, bad command, help command w/o args)
-  - optional positional params
   - help with a command
   - type map stuff
     - What about Any?
+  - make sure integer-like arguments stay as Strs (when type is Any)
+  - make sure exceptions propagate
+  - coercion?
