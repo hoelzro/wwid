@@ -77,4 +77,12 @@ ok $has-optional-called, 'has-optional should have been called via run(["has-opt
 ok !$show-help-called, 'show-help should not have been called when has-optional is given enough arguments';
 is_deeply(@previous-has-optional-args.item, ['one', Str, Str]);
 
+reset();
+
+App.new.run(['has-optional', 'one', 'two', 'three', 'four']);
+
+ok !$needs3-called, 'needs3 should not have been called via run(["has-optional", ...4 args...])';
+ok !$has-optional-called, 'has-optional should not have been called via run(["has-optional", ...4 args...])';
+ok $show-help-called, 'show-help should have been called when has-optional is given too many arguments';
+
 done();
