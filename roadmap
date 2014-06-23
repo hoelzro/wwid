@@ -34,3 +34,5 @@ App-Subcommander tests:
   - make sure integer-like arguments stay as Strs (when type is Any)
   - make sure exceptions propagate
   - coercion?
+  - Return value for run?
+  - short options
