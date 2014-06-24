@@ -4,11 +4,13 @@ use Test;
 use App::Subcommander;
 
 my $prev-name;
+my $prev-value;
 my $prev-required-name;
 my $show-help-called;
 
 sub reset {
     $prev-name = Str;
+    $prev-value = Int;
     $prev-required-name = Str;
     $show-help-called = False;
 }
@@ -20,6 +22,10 @@ my class App does App::Subcommander {
 
     method has-required-flag(Str :$name!) is subcommand {
         $prev-required-name = $name;
+    }
+
+    method go-int(Int :$value) is subcommand {
+        $prev-value = $value;
     }
 
     method show-help {
@@ -78,8 +84,20 @@ ok $show-help-called, 'show-help should be called if an unrecognized option is p
 
 reset();
 
+App.new.run(['go-int', '--value=10']);
+
+ok $prev-value eqv 10, 'The value should have been properly converted between types';
+ok !$show-help-called, 'show-help should not be called in case of success';
+
+reset();
+
+App.new.run(['go-int', '--value=foo']);
+
+ok !$prev-value.defined, 'The subcommand should not be called if a type conversion failed';
+ok $show-help-called, 'show-help should be called if a type conversion failed';
+
+reset();
+
 done();
 
 # XXX boolean option
-# XXX integer option
-# XXX "mandatory" option
