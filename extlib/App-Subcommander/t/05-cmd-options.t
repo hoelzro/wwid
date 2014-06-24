@@ -5,12 +5,16 @@ use App::Subcommander;
 
 my $prev-name;
 my $prev-value;
+my $prev-flag;
+my $prev-arg;
 my $prev-required-name;
 my $show-help-called;
 
 sub reset {
     $prev-name = Str;
     $prev-value = Int;
+    $prev-flag = Bool;
+    $prev-arg = Str;
     $prev-required-name = Str;
     $show-help-called = False;
 }
@@ -26,6 +30,11 @@ my class App does App::Subcommander {
 
     method go-int(Int :$value) is subcommand {
         $prev-value = $value;
+    }
+
+    method go-bool(Str $arg?, Bool :$flag) is subcommand {
+        $prev-flag = $flag;
+        $prev-arg = $arg;
     }
 
     method show-help {
@@ -98,6 +107,27 @@ ok $show-help-called, 'show-help should be called if a type conversion failed';
 
 reset();
 
-done();
+App.new.run(['go-bool', '--flag']);
 
-# XXX boolean option
+is $prev-flag, True, 'Passing just --flag should work for boolean options';
+ok !$prev-arg.defined, 'No extra arguments should go through';
+ok !$show-help-called, 'show-help should not be called in case of success';
+
+reset();
+
+App.new.run(['go-bool', '--flag', 'value']);
+
+is $prev-flag, True, 'Passing --flag should work for boolean options';
+is $prev-arg, 'value', 'Extra arguments should go through the positional args';
+ok !$show-help-called, 'show-help should not be called in case of success';
+
+reset();
+
+App.new.run(['go-bool', '--flag=value']);
+
+ok !$prev-flag.defined, 'Passing boolean --flag with an explicit value should fail ';
+ok $show-help-called, 'show-help should not be called in case of success';
+
+reset();
+
+done();
