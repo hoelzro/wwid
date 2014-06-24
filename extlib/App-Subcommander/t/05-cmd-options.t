@@ -71,6 +71,13 @@ ok !$show-help-called, 'show-help should not be called if required option is giv
 
 reset();
 
+App.new.run(['do-stuff', '--bad-name=Fred']);
+
+ok !$prev-name.defined, 'passing in an unrecognized option should not invoke the subcommand';
+ok $show-help-called, 'show-help should be called if an unrecognized option is passed in';
+
+reset();
+
 done();
 
 # XXX boolean option
