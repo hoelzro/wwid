@@ -19,6 +19,24 @@ our role App::Subcommander {
         $arg eq '--'
     }
 
+    method !fix-type($command, $name, $value) {
+        my $expected-type;
+
+        for $command.signature.params -> $param {
+            next if $param.invocant;
+            next unless $param.named;
+            next if $param.slurpy;
+
+            if $name eq $param.named_names[0] {
+                $expected-type = $param.type.^name;
+                last;
+            }
+        }
+        # if we don't have an expected type, just return the type; we'll
+        # deal with it later
+        return $expected-type ?? try $value."$expected-type"() !! $value;
+    }
+
     method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
         my %command-options;
         my %app-options;
@@ -46,7 +64,9 @@ our role App::Subcommander {
                     return unless @copy;
                     $value = @copy.shift;
                 }
-                %command-options{$name} = $value; # XXX types
+                $value = self!fix-type($subcommand, $name, $value);
+                return unless $value.defined;
+                %command-options{$name} = $value;
             } else {
                 if $subcommand.defined {
                     @command-args.push: $arg;
