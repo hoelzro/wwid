@@ -1,7 +1,7 @@
 use v6;
 
 use Test;
-use App::Subcommand;
+use App::Subcommander;
 
 my $prev-name;
 my $show-help-called;
@@ -11,8 +11,8 @@ sub reset {
     $show-help-called = False;
 }
 
-my class App does App::Subcommand {
-    method do-stuff(Str :$name = 'Bob') {
+my class App does App::Subcommander {
+    method do-stuff(Str :$name = 'Bob') is subcommand {
         $prev-name = $name;
     }
 
@@ -32,7 +32,7 @@ reset();
 
 App.new.run(['do-stuff', '--name=Fred']);
 
-is $prev-name, 'Fred';
+is $prev-name, 'Fred', 'double dash followed by equals';
 ok !$show-help-called;
 
 reset();
