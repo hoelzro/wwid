@@ -7,12 +7,32 @@ our role App::Subcommander {
         $arg ~~ /^ '-'/
     }
 
-    method !parse-option($arg) {
-        if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
-            ( ~$<key>, ~$<value> )
-        } else {
-            ( $arg.substr(2), Str )
+    method !parse-option($command, $arg) {
+        my ( $key, $value ) =
+            do if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
+                ( ~$<key>, ~$<value> )
+            } else {
+                ( $arg.substr(2), Str )
+            };
+
+        for $command.signature.params -> $param {
+            next if $param.invocant;
+            next unless $param.named;
+            next if $param.slurpy;
+
+            if $key eq $param.named_names[0] {
+                if $param.type eqv Bool {
+                    if $value.defined {
+                        return;
+                    } else {
+                        $value = 'True';
+                    }
+                }
+                last;
+            }
         }
+
+        ( $key, $value )
     }
 
     method !is-option-terminator($arg) {
@@ -59,7 +79,8 @@ our role App::Subcommander {
                 }
                 return
             } elsif self!is-option($arg) {
-                my ( $name, $value ) = self!parse-option($arg);
+                my ( $name, $value ) = self!parse-option($subcommand, $arg);
+                return unless $name.defined;
                 unless $value.defined {
                     return unless @copy;
                     $value = @copy.shift;
