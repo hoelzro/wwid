@@ -7,6 +7,14 @@ our role App::Subcommander {
         $arg ~~ /^ '-'/
     }
 
+    method !parse-option($arg) {
+        if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
+            ( ~$<key>, ~$<value> )
+        } else {
+            ( $arg.substr(2), Str )
+        }
+    }
+
     method !is-option-terminator($arg) {
         $arg eq '--'
     }
@@ -33,7 +41,12 @@ our role App::Subcommander {
                 }
                 return
             } elsif self!is-option($arg) {
-                # XXX impl
+                my ( $name, $value ) = self!parse-option($arg);
+                unless $value.defined {
+                    return unless @copy;
+                    $value = @copy.shift;
+                }
+                %command-options{$name} = $value; # XXX types
             } else {
                 if $subcommand.defined {
                     @command-args.push: $arg;
