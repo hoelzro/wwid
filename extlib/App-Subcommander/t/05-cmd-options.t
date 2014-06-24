@@ -44,13 +44,6 @@ ok !$show-help-called;
 
 reset();
 
-App.new.run(['do-stuff', '--name', 'Fred']);
-
-is $prev-name, 'Fred';
-ok !$show-help-called;
-
-reset();
-
 App.new.run(['do-stuff', '--name']);
 
 ok !$prev-name.defined;
