@@ -79,6 +79,7 @@ our role App::Subcommander {
 
         my $arity = $signature.arity - 1; # 1 is for the invocant
         my $count = $signature.count - 1;
+        my %unaccounted-for = %($named-args);
 
         return False unless $arity <= +$pos-args <= $count;
         for $signature.params -> $param {
@@ -87,9 +88,13 @@ our role App::Subcommander {
             next if $param.slurpy;
 
             my $name = $param.named_names[0];
+            %unaccounted-for{$name}:delete;
             if !$param.optional && !($named-args{$name}:exists) {
                 return False;
             }
+        }
+        if %unaccounted-for {
+            return False;
         }
         return True;
     }
