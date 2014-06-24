@@ -74,6 +74,26 @@ our role App::Subcommander {
         return %result.item;
     }
 
+    method !check-args($command, $pos-args, $named-args) {
+        my $signature = $command.signature;
+
+        my $arity = $signature.arity - 1; # 1 is for the invocant
+        my $count = $signature.count - 1;
+
+        return False unless $arity <= +$pos-args <= $count;
+        for $signature.params -> $param {
+            next if $param.invocant;
+            next unless $param.named;
+            next if $param.slurpy;
+
+            my $name = $param.named_names[0];
+            if !$param.optional && !($named-args{$name}:exists) {
+                return False;
+            }
+        }
+        return True;
+    }
+
     method run(@args) returns int {
         my ( $command, $args, $app-options, $cmd-options ) = self!parse-command-line(@args);
 
@@ -86,15 +106,12 @@ our role App::Subcommander {
             die 'multis not yet supported by App::Subcommander';
         }
 
-        try {
-            $command(self, |@($args), |%($cmd-options));
-
-            CATCH {
-                when $_ ~~ X::AdHoc && /["Not enough"|"Too many"] " positional parameters"/ {
-                    self.show-help;
-                }
-            }
+        unless self!check-args($command, $args, $cmd-options) {
+            self.show-help;
+            return 1;
         }
+
+        $command(self, |@($args), |%($cmd-options));
 
         return 0;
     }
