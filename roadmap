@@ -22,11 +22,7 @@ Later
 
 App-Subcommander tests:
 
-  - look at slop, https://github.com/codegangsta/cli, click
-
   - multis
-  - keyword params (options)
-  - extra keyword
   - show help (no command, bad command, help command w/o args)
   - help with a command
   - type map stuff
@@ -36,3 +32,15 @@ App-Subcommander tests:
   - coercion?
   - Return value for run?
   - short options
+  - list parameters
+  - Shortened subcommand names
+  - Interactive input of missing options
+  - bash/zsh completion generation?
+  - Slurpy params
+  - multi-name params (:name($foo))
+  - what if the value for an option is optional? (ex. --password)
+  - non-strict mode wrt. extra options
+  - argument bundling
+  - how will --config work (if I have something like --interactive?)
+  - typed positional arguments
+  - negated boolean flags
