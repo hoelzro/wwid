@@ -136,9 +136,8 @@ our role App::Subcommander {
             next unless $param.named;
             next if $param.slurpy;
 
-            my $name = $param.named_names[0];
-            %unaccounted-for{$name}:delete;
-            if !$param.optional && !($named-args{$name}:exists) {
+            %unaccounted-for{ $param.named_names }:delete;
+            if !$param.optional && !($named-args{$param.named_names.any}:exists) {
                 return False;
             }
         }
