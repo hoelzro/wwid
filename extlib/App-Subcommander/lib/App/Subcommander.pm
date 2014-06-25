@@ -7,7 +7,7 @@ our role App::Subcommander {
         $arg ~~ /^ '-'/
     }
 
-    method !parse-option($command, $arg) {
+    method !parse-option($type-info, $arg) {
         my ( $key, $value ) =
             do if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
                 ( ~$<key>, ~$<value> )
@@ -15,20 +15,11 @@ our role App::Subcommander {
                 ( $arg.substr(2), Str )
             };
 
-        for $command.signature.params -> $param {
-            next if $param.invocant;
-            next unless $param.named;
-            next if $param.slurpy;
-
-            if $key eq $param.named_names[0] {
-                if $param.type eqv Bool {
-                    if $value.defined {
-                        return;
-                    } else {
-                        $value = 'True';
-                    }
-                }
-                last;
+        if $type-info{$key} eqv Bool {
+            if $value.defined {
+                return; # this isn't allowed
+            } else {
+                $value = 'True'; # coercion from Str → Bool will happen later on
             }
         }
 
@@ -39,22 +30,31 @@ our role App::Subcommander {
         $arg eq '--'
     }
 
-    method !fix-type($command, $name, $value) {
-        my $expected-type;
+    method !fix-type($expected-type, $value) {
+        # if we don't have an expected type, just return the value; we'll
+        # deal with it later
+        my $name = $expected-type.^name;
+        return $expected-type eqv Any ?? $value !! try $value."$name"();
+    }
+
+    method !determine-type-info($command) {
+        my @positional;
+        my %named;
 
         for $command.signature.params -> $param {
             next if $param.invocant;
-            next unless $param.named;
             next if $param.slurpy;
 
-            if $name eq $param.named_names[0] {
-                $expected-type = $param.type.^name;
-                last;
+            if $param.named {
+                for $param.named_names -> $name {
+                    %named{$name} = $param.type;
+                }
+            } else {
+                @positional.push: $param.type;
             }
         }
-        # if we don't have an expected type, just return the type; we'll
-        # deal with it later
-        return $expected-type ?? try $value."$expected-type"() !! $value;
+
+        ( @positional.item, %named.item )
     }
 
     method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
@@ -63,6 +63,9 @@ our role App::Subcommander {
         my @command-args;
         my $subcommand;
         my @copy = @args;
+
+        my $pos-type-info;
+        my $named-type-info;
 
         while @copy {
             my $arg = @copy.shift;
@@ -76,20 +79,23 @@ our role App::Subcommander {
                     if $subcommand !~~ Subcommand {
                         return;
                     }
+                    ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
                 }
                 return
             } elsif self!is-option($arg) {
-                my ( $name, $value ) = self!parse-option($subcommand, $arg);
+                my ( $name, $value ) = self!parse-option($named-type-info, $arg);
                 return unless $name.defined;
                 unless $value.defined {
                     return unless @copy;
                     $value = @copy.shift;
                 }
-                $value = self!fix-type($subcommand, $name, $value);
+                $value = self!fix-type($named-type-info{$name}, $value);
                 return unless $value.defined;
                 %command-options{$name} = $value;
             } else {
                 if $subcommand.defined {
+                    $arg = self!fix-type($pos-type-info[ +@command-args ], $arg);
+                    return unless $arg;
                     @command-args.push: $arg;
                 } else {
                     $subcommand = $arg;
@@ -97,6 +103,7 @@ our role App::Subcommander {
                     if $subcommand !~~ Subcommand {
                         return;
                     }
+                    ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
                 }
             }
         }
