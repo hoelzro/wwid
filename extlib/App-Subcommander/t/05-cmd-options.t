@@ -150,4 +150,10 @@ ok !$show-help-called;
 
 reset();
 
+App.new.run(['go-cool', '--cool=10']);
+
+ok !$show-help-called;
+
+reset();
+
 done();

@@ -116,4 +116,10 @@ ok !$show-help-called;
 
 reset();
 
+App.new.run(['has-cool', '12']);
+
+ok !$show-help-called;
+
+reset();
+
 done();
