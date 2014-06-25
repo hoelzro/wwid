@@ -22,25 +22,34 @@ Later
 
 App-Subcommander tests:
 
-  - multis
+Now:
+
   - show help (no command, bad command, help command w/o args)
-  - help with a command
-  - type map stuff
-    - What about Any?
-  - make sure integer-like arguments stay as Strs (when type is Any)
-  - make sure exceptions propagate
-  - coercion?
+  - help with a command (cmd help $cmd)
+  - app options (--config preceding subcommand)
+  - type map stuff (Effort $e)
+  - coercion (when someone does Str $s as Int)
   - Return value for run?
-  - short options
-  - list parameters
+  - short options (-s)
+      - argument bundling
+  - list parameters (Str @foo)
+  - negated boolean flags (no, no-, make sure this wouldn't clash with --node)
+  - option terminator (--)
+
+Later:
+
+  - Document how slurpies all share the same type
+  - Should we worry if a non-Str is passed to run?
+  - What if command and app options clash?
+  - What if a subcommand nextsame's its parent?  pos/named args?
+  - how will --config work (if I have something like --interactive?)
+  - what if the value for an option is optional? (ex. --password)
+  - multis
+
+Extensions:
+
   - Shortened subcommand names
   - Interactive input of missing options
   - bash/zsh completion generation?
-  - Slurpy params
-  - multi-name params (:name($foo))
-  - what if the value for an option is optional? (ex. --password)
   - non-strict mode wrt. extra options
-  - argument bundling
-  - how will --config work (if I have something like --interactive?)
-  - typed positional arguments
-  - negated boolean flags
+  - What if I want a default subcommand?
