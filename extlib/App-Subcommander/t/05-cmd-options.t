@@ -41,6 +41,10 @@ my class App does App::Subcommander {
         ok $any.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
     }
 
+    method go-cool(Cool :$cool) is subcommand {
+        ok $cool.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -135,6 +139,14 @@ ok $show-help-called, 'show-help should not be called in case of success';
 reset();
 
 App.new.run(['go-any', '--any=value']);
+
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-cool', '--cool=value']);
+
+ok !$show-help-called;
 
 reset();
 

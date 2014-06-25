@@ -38,6 +38,10 @@ my class App does App::Subcommander {
         ok $any.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
     }
 
+    method has-cool(Cool $cool) is subcommand {
+        ok $cool.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -101,6 +105,14 @@ ok $previous-int-arg eqv 10, 'coercion should work correctly for Int args';
 reset();
 
 App.new.run(['has-any', 'Joe']);
+
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['has-cool', 'Joe']);
+
+ok !$show-help-called;
 
 reset();
 
