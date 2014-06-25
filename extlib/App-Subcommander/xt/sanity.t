@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 2;
+plan 3;
 
 # sanity checks to make sure the Perl 6 implementation we're running
 # on behaves as we expect.  If it doesn't, it doesn't mean that
@@ -34,3 +34,11 @@ sub coercing(In $arg as Out) {
 coercing(In.new);
 
 ok $out-called, 'A method of the same name as the target class should be called for coercion'; 
+
+my $ex;
+try {
+    EVAL('sub typed-rest(Str $name, Int *@typed-rest) {}');
+    CATCH { default { $ex = $_ } }
+}
+
+ok $ex.defined, 'typed slurpies should be NYI';
