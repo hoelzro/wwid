@@ -8,6 +8,7 @@ my Bool $has-optional-called = False;
 my Bool $show-help-called    = False;
 my @previous-needs3-args;
 my @previous-has-optional-args;
+my $previous-int-arg;
 
 sub reset {
     $needs3-called       = False;
@@ -27,6 +28,10 @@ my class App does App::Subcommander {
     method has-optional(Str $one?, Str $two?, Str $three?) is subcommand {
         @previous-has-optional-args = ( $one, $two, $three );
         $has-optional-called = True;
+    }
+
+    method has-int(Int $one) is subcommand {
+        $previous-int-arg = $one;
     }
 
     method show-help {
@@ -84,5 +89,9 @@ App.new.run(['has-optional', 'one', 'two', 'three', 'four']);
 ok !$needs3-called, 'needs3 should not have been called via run(["has-optional", ...4 args...])';
 ok !$has-optional-called, 'has-optional should not have been called via run(["has-optional", ...4 args...])';
 ok $show-help-called, 'show-help should have been called when has-optional is given too many arguments';
+
+App.new.run(['has-int', '10']);
+
+ok $previous-int-arg eqv 10, 'coercion should work correctly for Int args';
 
 done();
