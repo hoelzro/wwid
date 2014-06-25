@@ -34,6 +34,7 @@ our role App::Subcommander {
         # if we don't have an expected type, just return the value; we'll
         # deal with it later
         my $name = $expected-type.^name;
+        return $value if $value ~~ $expected-type; # just return it if the type is right
         return $expected-type eqv Any ?? $value !! try $value."$name"();
     }
 
