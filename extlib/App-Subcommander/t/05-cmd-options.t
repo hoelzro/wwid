@@ -37,6 +37,10 @@ my class App does App::Subcommander {
         $prev-arg = $arg;
     }
 
+    method go-any(:$any) is subcommand {
+        ok $any.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -127,6 +131,10 @@ App.new.run(['go-bool', '--flag=value']);
 
 ok !$prev-flag.defined, 'Passing boolean --flag with an explicit value should fail ';
 ok $show-help-called, 'show-help should not be called in case of success';
+
+reset();
+
+App.new.run(['go-any', '--any=value']);
 
 reset();
 

@@ -34,6 +34,10 @@ my class App does App::Subcommander {
         $previous-int-arg = $one;
     }
 
+    method has-any($any) is subcommand {
+        ok $any.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -93,5 +97,11 @@ ok $show-help-called, 'show-help should have been called when has-optional is gi
 App.new.run(['has-int', '10']);
 
 ok $previous-int-arg eqv 10, 'coercion should work correctly for Int args';
+
+reset();
+
+App.new.run(['has-any', 'Joe']);
+
+reset();
 
 done();
