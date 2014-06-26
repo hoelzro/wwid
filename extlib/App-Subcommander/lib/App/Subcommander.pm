@@ -113,7 +113,14 @@ our role App::Subcommander {
                     }
                     $value = @copy.shift;
                 }
-                %command-options{$name} = self!fix-type($named-type-info{$name}, $value);
+                if $named-type-info{$name} ~~ Positional { # XXX is ~~ the right test?
+                    unless %command-options{$name}:exists {
+                        %command-options{$name} = [];
+                    }
+                    %command-options{$name}.push: self!fix-type($named-type-info{$name}.of, $value);
+                } else {
+                    %command-options{$name} = self!fix-type($named-type-info{$name}, $value);
+                }
             } else {
                 if $subcommand.defined {
                     @command-args.push: self!fix-type($pos-type-info[ +@command-args ], $arg);
