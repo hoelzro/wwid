@@ -2,6 +2,18 @@ my role Subcommand {
     has Str $.command-name is rw;
 }
 
+my class SubcommanderException is Exception {
+    has Str $!message;
+
+    method new(Str $message) {
+        self.bless(:$message);
+    }
+
+    method message returns Str {
+        $!message
+    }
+}
+
 our role App::Subcommander {
     method !is-option($arg) {
         $arg ~~ /^ '-'/
@@ -17,7 +29,7 @@ our role App::Subcommander {
 
         if $type-info{$key} eqv Bool {
             if $value.defined {
-                return; # this isn't allowed
+                SubcommanderException.new("Option '$key' is a flag, and thus doesn't take a value").throw;
             } else {
                 $value = 'True'; # coercion from Str → Bool will happen later on
             }
@@ -30,12 +42,21 @@ our role App::Subcommander {
         $arg eq '--'
     }
 
-    method !fix-type($expected-type, $value) {
-        # if we don't have an expected type, just return the value; we'll
-        # deal with it later
+    method !fix-type($expected-type, $value is copy) {
         my $name = $expected-type.^name;
-        return $value if $value ~~ $expected-type; # just return it if the type is right
-        return $expected-type eqv Any ?? $value !! try $value."$name"();
+
+        if $value !~~ $expected-type {
+            # $value = try $value."$name'(); didn't work, look into this
+            try {
+                $value = $value."$name"();
+                CATCH {
+                    default {
+                        SubcommanderException.new("Failed to convert '$value'").throw;
+                    }
+                }
+            }
+        }
+        $value
     }
 
     method !determine-type-info($command) {
@@ -75,34 +96,32 @@ our role App::Subcommander {
                 if $subcommand.defined {
                     @command-args.push: @copy;
                 } else {
-                    ( $subcommand, @command-args ) = @copy;
-                    $subcommand = self!get-commands(){$subcommand};
+                    my $name;
+                    ( $name, @command-args ) = @copy;
+                    $subcommand = self!get-commands(){$name};
                     if $subcommand !~~ Subcommand {
-                        return;
+                        SubcommanderException.new("No such command '$name'").throw;
                     }
                     ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
                 }
                 return
             } elsif self!is-option($arg) {
                 my ( $name, $value ) = self!parse-option($named-type-info, $arg);
-                return unless $name.defined;
+
                 unless $value.defined {
-                    return unless @copy;
+                    unless @copy {
+                        SubcommanderException.new("Option '$name' requires a value").throw;
+                    }
                     $value = @copy.shift;
                 }
-                $value = self!fix-type($named-type-info{$name}, $value);
-                return unless $value.defined;
-                %command-options{$name} = $value;
+                %command-options{$name} = self!fix-type($named-type-info{$name}, $value);
             } else {
                 if $subcommand.defined {
-                    $arg = self!fix-type($pos-type-info[ +@command-args ], $arg);
-                    return unless $arg;
-                    @command-args.push: $arg;
+                    @command-args.push: self!fix-type($pos-type-info[ +@command-args ], $arg);
                 } else {
-                    $subcommand = $arg;
-                    $subcommand = self!get-commands(){$subcommand};
+                    $subcommand = self!get-commands(){$arg};
                     if $subcommand !~~ Subcommand {
-                        return;
+                        SubcommanderException.new("No such command '$arg'").throw;
                     }
                     ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
                 }
@@ -131,7 +150,12 @@ our role App::Subcommander {
         my %unaccounted-for = %($named-args);
         my $saw-slurpy-named;
 
-        return False unless $arity <= +$pos-args <= $count;
+        if +$pos-args < $arity {
+            SubcommanderException.new('Too few arguments').throw;
+        }
+        if +$pos-args > $count {
+            SubcommanderException.new('Too many arguments').throw;
+        }
         for $signature.params -> $param {
             next if $param.invocant;
             next unless $param.named;
@@ -145,35 +169,37 @@ our role App::Subcommander {
 
             %unaccounted-for{ $param.named_names }:delete;
             if !$param.optional && !($named-args{$param.named_names.any}:exists) {
-                return False;
+                my $name = $param.named_names[0];
+                SubcommanderException.new("Required option '$name' not provided").throw;
             }
         }
         if %unaccounted-for && !$saw-slurpy-named {
-            return False;
+            my $first = %unaccounted-for.keys.sort[0];
+            SubcommanderException.new("Unrecognized option '$first'").throw;
         }
-        return True;
     }
 
     method run(@args) returns int {
-        my ( $command, $args, $app-options, $cmd-options ) = self!parse-command-line(@args);
+        try {
+            my ( $command, $args, $app-options, $cmd-options ) = self!parse-command-line(@args);
 
-        unless $command.defined {
-            self.show-help;
-            return 1;
+            if +$command.candidates > 1 {
+                die 'multis not yet supported by App::Subcommander';
+            }
+
+            self!check-args($command, $args, $cmd-options);
+
+            $command(self, |@($args), |%($cmd-options));
+
+            return 0;
+
+            CATCH {
+                when SubcommanderException {
+                    self.show-help;
+                    return 1;
+                }
+            }
         }
-
-        if +$command.candidates > 1 {
-            die 'multis not yet supported by App::Subcommander';
-        }
-
-        unless self!check-args($command, $args, $cmd-options) {
-            self.show-help;
-            return 1;
-        }
-
-        $command(self, |@($args), |%($cmd-options));
-
-        return 0;
     }
 
     method show-help {
