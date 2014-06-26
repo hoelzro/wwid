@@ -3,14 +3,10 @@ my role Subcommand {
 }
 
 my class SubcommanderException is Exception {
-    has Str $!message;
+    has Str $.message;
 
     method new(Str $message) {
         self.bless(:$message);
-    }
-
-    method message returns Str {
-        $!message
     }
 }
 
