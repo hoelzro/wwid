@@ -129,19 +129,26 @@ our role App::Subcommander {
         my $arity = $signature.arity - 1; # 1 is for the invocant
         my $count = $signature.count - 1;
         my %unaccounted-for = %($named-args);
+        my $saw-slurpy-named;
 
         return False unless $arity <= +$pos-args <= $count;
         for $signature.params -> $param {
             next if $param.invocant;
             next unless $param.named;
-            next if $param.slurpy;
+
+            if $param.slurpy {
+                if $param.gist ne '*%_' { # the compiler adds an implicit slurpy parameter to methods
+                    $saw-slurpy-named = True;
+                }
+                next;
+            }
 
             %unaccounted-for{ $param.named_names }:delete;
             if !$param.optional && !($named-args{$param.named_names.any}:exists) {
                 return False;
             }
         }
-        if %unaccounted-for {
+        if %unaccounted-for && !$saw-slurpy-named {
             return False;
         }
         return True;
