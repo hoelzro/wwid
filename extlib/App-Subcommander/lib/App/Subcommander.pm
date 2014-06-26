@@ -81,7 +81,6 @@ our role App::Subcommander {
 
     method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
         my %command-options;
-        my %app-options;
         my @command-args;
         my $subcommand;
         my @copy = @args;
@@ -127,7 +126,7 @@ our role App::Subcommander {
                 }
             }
         }
-        return ( $subcommand, @command-args.item, %app-options.item, %command-options.item );
+        return ( $subcommand, @command-args.item, %command-options.item );
     }
 
     method !get-commands {
@@ -181,7 +180,7 @@ our role App::Subcommander {
 
     method run(@args) returns int {
         try {
-            my ( $command, $args, $app-options, $cmd-options ) = self!parse-command-line(@args);
+            my ( $command, $args, $cmd-options ) = self!parse-command-line(@args);
 
             if +$command.candidates > 1 {
                 die 'multis not yet supported by App::Subcommander';
