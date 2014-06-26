@@ -19,7 +19,7 @@ my class App does App::Subcommander {
 
 plan 2;
 
-App.new.run(['listy', 'test', '--name=Bob', '--name=Fred']);
+App.new.run(['listy', 'test', '--names=Bob', '--names=Fred']);
 
 is $prev-arg, 'test';
 is_deeply @prev-names.item, ['Bob', 'Fred'];
