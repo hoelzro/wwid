@@ -201,6 +201,7 @@ our role App::Subcommander {
 
             CATCH {
                 when SubcommanderException {
+                    $*ERR.say: $_.message;
                     self.show-help;
                     return 1;
                 }
