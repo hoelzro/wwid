@@ -111,7 +111,7 @@ our role App::Subcommander {
                 }
                 if $named-type-info{$name} ~~ Positional { # XXX is ~~ the right test?
                     unless %command-options{$name}:exists {
-                        %command-options{$name} = [];
+                        %command-options{$name} = Array[$named-type-info{$name}.of].new;
                     }
                     %command-options{$name}.push: self!fix-type($named-type-info{$name}.of, $value);
                 } else {
