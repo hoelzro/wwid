@@ -37,10 +37,8 @@ Now:
     - Test if it is an array parameter
   - What if I have $name and @name (I think the compiler would reject this)
   - What if I have a positional array or hash parameter?
-  - --foo --bar ← fail
-  - --foo val1 --foo val2
   - --foo -- --bar should work
-  - optional Int (make sure the type information makes it into determine-type-info)
+  - optional Int (make sure the type information makes it into determine-type-info) (Int $option?)
   - Missing options for list options
   - Int :@options
   - What happens if I *don't* specify a subcommand?
