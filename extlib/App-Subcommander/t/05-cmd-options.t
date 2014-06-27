@@ -45,6 +45,12 @@ my class App does App::Subcommander {
         ok $cool.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
     }
 
+    method go-multi(Str :$name, Str :$value, Bool :$flag) is subcommand {
+        $prev-name  = $name;
+        $prev-value = $value;
+        $prev-flag  = $flag;
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -152,6 +158,31 @@ reset();
 
 App.new.run(['go-cool', '--cool=10']);
 
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-multi', '--flag', '--name', 'Bruce', '--value', 'something']);
+
+is $prev-flag, True;
+is $prev-name, 'Bruce';
+is $prev-value, 'something';
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-multi', '--name', '--flag', 'Bruce', '--value', 'something']);
+
+ok !$prev-flag.defined;
+ok !$prev-name.defined;
+ok !$prev-value.defined;
+ok $show-help-called;
+
+reset();
+
+App.new.run(['do-stuff', '--name', 'Bruce', '--name', 'Fred']);
+
+is $prev-name, 'Fred';
 ok !$show-help-called;
 
 reset();
