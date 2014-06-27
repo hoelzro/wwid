@@ -108,6 +108,9 @@ our role App::Subcommander {
                         SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                     $value = @copy.shift;
+                    if self!is-option($value) {
+                        SubcommanderException.new("Option '$name' requires a value").throw;
+                    }
                 }
                 if $named-type-info{$name} ~~ Positional { # XXX is ~~ the right test?
                     unless %command-options{$name}:exists {
