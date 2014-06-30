@@ -42,6 +42,10 @@ my class App does App::Subcommander {
         ok $cool.WHAT eqv Str, 'A looser type constraint than Str should still be passed strings';
     }
 
+    method has-opt-int(Int $one?) is subcommand {
+        $previous-int-arg = $one;
+    }
+
     method show-help {
         $show-help-called = True;
     }
@@ -118,6 +122,20 @@ reset();
 
 App.new.run(['has-cool', '12']);
 
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['has-opt-int', '12']);
+
+ok $previous-int-arg eqv 12;
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['has-opt-int']);
+
+ok $previous-int-arg eqv Int;
 ok !$show-help-called;
 
 reset();
