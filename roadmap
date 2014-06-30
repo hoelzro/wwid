@@ -34,11 +34,9 @@ Now:
   - negated boolean flags (no, no-, make sure this wouldn't clash with --node)
   - What if I have name and pseudonym, but I specify both? (if it's *not* an array parameter)
     - Test if it is an array parameter
-  - What if I have a positional array or hash parameter?
-  - optional Int (make sure the type information makes it into determine-type-info) (Int $option?)
-  - Missing options for list options
   - Int :@options
   - What happens if I *don't* specify a subcommand?
+  - An unrecognized option prompts for a value if none is given (there should be a different error message)
 
 Later:
 
