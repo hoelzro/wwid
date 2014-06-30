@@ -42,6 +42,8 @@ my class App does App::Subcommander {
 
 plan *;
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 App.new.run(['cmd', 'foo', '--', 'bar']); # make sure -- doesn't end up in args
 
 is $prev-first, 'foo';
