@@ -108,7 +108,14 @@ our role App::Subcommander {
                         SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                     $value = @copy.shift;
-                    if self!is-option($value) {
+                    if self!is-option-terminator($value) {
+                        unless @copy {
+                            SubcommanderException.new("Option '$name' requires a value").throw;
+                        }
+                        $value = @copy.shift;
+                        @command-args.push: @copy;
+                        @copy = ();
+                    } elsif self!is-option($value) {
                         SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                 }
