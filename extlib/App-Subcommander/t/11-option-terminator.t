@@ -101,6 +101,15 @@ ok !$show-help-called;
 
 reset();
 
+App.new.run(['flag-cmd', '--str-flag', '--', '--bar', '--baz']); # make sure it works with options and more arguments
+
+is $prev-str-flag, '--bar';
+is $prev-opt-value, '--baz';
+ok !$prev-bool-flag.defined;
+ok !$show-help-called;
+
+reset();
+
 App.new.run(['flag-cmd', '--str-flag', '--']); # make sure it calls for help when it runs out
 
 ok !$prev-str-flag.defined;
