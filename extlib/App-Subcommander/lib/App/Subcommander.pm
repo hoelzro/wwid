@@ -99,7 +99,7 @@ our role App::Subcommander {
                     }
                     ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
                 }
-                return
+                last;
             } elsif self!is-option($arg) {
                 my ( $name, $value ) = self!parse-option($named-type-info, $arg);
 
