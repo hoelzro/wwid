@@ -143,14 +143,18 @@ our role App::Subcommander {
     }
 
     method !get-commands {
-        my %result = gather {
-            for self.^methods -> $method {
-                if +$method.candidates > 1 && any($method.candidates.map({ $_ ~~ Subcommand })) {
-                    die "multis not yet supported by App::Subcommander";
-                }
-                take $method.command-name => $method if $method ~~ Subcommand;
+        my %result;
+        for self.^methods -> $method {
+            if +$method.candidates > 1 && any($method.candidates.map({ $_ ~~ Subcommand })) {
+                die "multis not yet supported by App::Subcommander";
             }
-        };
+            if $method ~~ Subcommand {
+                if %result{$method.command-name}:exists {
+                    SubcommanderException.new("Duplicate definition of subcommand '$method.command-name()'").throw;
+                }
+                %result{$method.command-name} = $method;
+            }
+        }
         return %result.item;
     }
 
@@ -191,7 +195,28 @@ our role App::Subcommander {
         }
     }
 
+    method !check-validity() {
+        my @commands = self!get-commands.values;
+
+        for @commands -> $cmd {
+            for $cmd.signature.params -> $param {
+                next if $param.invocant;
+                next unless $param.positional;
+
+                if $param.type ~~ Positional {
+                    SubcommanderException.new("Positional array parameters are not allowed ($param.gist(), command = $cmd.command-name())").throw;
+                }
+
+                if $param.type ~~ Associative {
+                    SubcommanderException.new("Positional hash parameters are not allowed ($param.gist(), command = $cmd.command-name())").throw;
+                }
+            }
+        }
+    }
+
     method run(@args) returns int {
+        self!check-validity();
+
         try {
             my ( $command, $args, $cmd-options ) = self!parse-command-line(@args);
 
