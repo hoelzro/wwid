@@ -32,11 +32,9 @@ Now:
   - short options (-s) (add-on role, automatic setup a separate add-on role)
       - argument bundling (add-on role)
   - negated boolean flags (no, no-, make sure this wouldn't clash with --node)
-  - What if I have name and pseudonym, but I specify both? (if it's *not* an array parameter)
-    - Test if it is an array parameter
-  - Int :@options
   - What happens if I *don't* specify a subcommand?
   - An unrecognized option prompts for a value if none is given (there should be a different error message)
+  - Do I test interspersing of options and targets?
 
 Later:
 
