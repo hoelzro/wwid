@@ -2,7 +2,7 @@ use v6;
 use Test;
 use App::Subcommander;
 
-plan 4;
+plan 5;
 
 my Str $prev-name;
 
@@ -41,5 +41,11 @@ reset();
 App.new.run(['has-required-aliases', '--pseudonym=Mark']);
 
 is $prev-name, 'Mark', 'Named parameters with more than one name should be registered as valid options';
+
+reset();
+
+App.new.run(['has-aliases', '--pseudonym=Mark', '--name=Terry']);
+
+is $prev-name, 'Terry', 'Aliases and original names should overwrite each other';
 
 reset();
