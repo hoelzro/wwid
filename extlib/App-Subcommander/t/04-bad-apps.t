@@ -13,11 +13,12 @@ try {
         method bar is subcommand('duplicate') {}
     }
 
+    App.new.run(['duplicate']);
+
     CATCH { default { $exception = $_ } }
 }
 
-skip 'NYI', 1;
-#ok $exception.defined, 'Trying to define duplicate command names should fail';
+ok $exception.defined, 'Trying to define duplicate command names should fail';
 
 $exception = Any;
 
@@ -26,11 +27,15 @@ try {
         method foo(Str @options) is subcommand {}
     }
 
+    App.new.run(['foo']);
+
     CATCH { default { $exception = $_ } }
 }
 
-skip 'NYI', 1;
-#ok $exception.defined, 'Trying to define a command with a Positional positional paramater should fail';
+ok $exception.defined, 'Trying to define a command with a Positional positional paramater should fail';
+
+try {
+}
 
 $exception = Any;
 
@@ -39,8 +44,9 @@ try {
         method foo(Str %options) is subcommand {}
     }
 
+    App.new.run(['foo']);
+
     CATCH { default { $exception = $_ } }
 }
 
-skip 'NYI', 1;
-#ok $exception.defined, 'Trying to define a command with an Associative positional paramater should fail';
+ok $exception.defined, 'Trying to define a command with an Associative positional paramater should fail';
