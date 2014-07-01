@@ -75,6 +75,20 @@ our role App::Subcommander {
         ( @positional.item, %named.item )
     }
 
+    method !get-canonical-names($command) {
+        gather {
+            for $command.signature.params -> $param {
+                next unless $param.named;
+                next if $param.slurpy;
+
+                my $first-name = $param.named_names[0];
+                for $param.named_names -> $name {
+                    take $name => $first-name;
+                }
+            }
+        }
+    }
+
     method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
         my %command-options;
         my @command-args;
@@ -83,6 +97,7 @@ our role App::Subcommander {
 
         my $pos-type-info;
         my $named-type-info;
+        my %canonical-names;
 
         while @copy {
             my $arg = @copy.shift;
@@ -98,6 +113,7 @@ our role App::Subcommander {
                         SubcommanderException.new("No such command '$name'").throw;
                     }
                     ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
+                    %canonical-names = self!get-canonical-names($subcommand);
                 }
                 last;
             } elsif self!is-option($arg) {
@@ -119,6 +135,7 @@ our role App::Subcommander {
                         SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                 }
+                $name = %canonical-names{$name} // $name;
                 if $named-type-info{$name} ~~ Positional { # XXX is ~~ the right test?
                     unless %command-options{$name}:exists {
                         %command-options{$name} = Array[$named-type-info{$name}.of].new;
@@ -136,6 +153,7 @@ our role App::Subcommander {
                         SubcommanderException.new("No such command '$arg'").throw;
                     }
                     ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
+                    %canonical-names = self!get-canonical-names($subcommand);
                 }
             }
         }
