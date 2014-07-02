@@ -34,7 +34,6 @@ Now:
   - negated boolean flags (no, no-, make sure this wouldn't clash with --node)
   - What happens if I *don't* specify a subcommand?
   - An unrecognized option prompts for a value if none is given (there should be a different error message)
-  - Do I test interspersing of options and targets?
 
 Later:
 
