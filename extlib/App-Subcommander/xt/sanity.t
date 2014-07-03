@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 3;
+plan 4;
 
 # sanity checks to make sure the Perl 6 implementation we're running
 # on behaves as we expect.  If it doesn't, it doesn't mean that
@@ -42,3 +42,10 @@ try {
 }
 
 ok $ex.defined, 'typed slurpies should be NYI';
+
+#| preceding comments should work
+my class Docced {
+#= following comments probably don't
+}
+
+is ~Docced.WHY, 'preceding comments should work';
