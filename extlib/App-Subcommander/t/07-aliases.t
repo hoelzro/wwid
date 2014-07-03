@@ -2,12 +2,14 @@ use v6;
 use Test;
 use App::Subcommander;
 
-plan 5;
+plan 7;
 
 my Str $prev-name;
+my Bool $prev-flag;
 
 sub reset {
     $prev-name = Str;
+    $prev-flag = Bool;
 }
 
 my class App is App::Subcommander {
@@ -17,6 +19,10 @@ my class App is App::Subcommander {
 
     method has-required-aliases(Str :pseudonym(:$name)!) is subcommand {
         $prev-name = $name;
+    }
+
+    method has-bool-aliases(Bool :fahne(:$flag)) is subcommand {
+        $prev-flag = $flag;
     }
 }
 
@@ -47,5 +53,17 @@ reset();
 App.new.run(['has-aliases', '--pseudonym=Mark', '--name=Terry']);
 
 is $prev-name, 'Terry', 'Aliases and original names should overwrite each other';
+
+reset();
+
+App.new.run(['has-bool-aliases', '--nofahne']);
+
+is $prev-flag, False, 'Boolean flag negation should work with aliases';
+
+reset();
+
+App.new.run(['has-bool-aliases', '--no-fahne']);
+
+is $prev-flag, False, 'Boolean flag negation should work with aliases';
 
 reset();

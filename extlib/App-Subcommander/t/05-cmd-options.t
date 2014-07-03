@@ -8,6 +8,7 @@ my $prev-value;
 my $prev-flag;
 my $prev-arg;
 my $prev-required-name;
+my $prev-node;
 my $show-help-called;
 
 sub reset {
@@ -16,6 +17,7 @@ sub reset {
     $prev-flag = Bool;
     $prev-arg = Str;
     $prev-required-name = Str;
+    $prev-node = Str;
     $show-help-called = False;
 }
 
@@ -32,9 +34,10 @@ my class App does App::Subcommander {
         $prev-value = $value;
     }
 
-    method go-bool(Str $arg?, Bool :$flag) is subcommand {
+    method go-bool(Str $arg?, Bool :$flag, Str :$node) is subcommand {
         $prev-flag = $flag;
         $prev-arg = $arg;
+        $prev-node = $node;
     }
 
     method go-any(:$any) is subcommand {
@@ -183,6 +186,31 @@ reset();
 App.new.run(['do-stuff', '--name', 'Bruce', '--name', 'Fred']);
 
 is $prev-name, 'Fred';
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-bool', '--noflag', 'value']);
+
+is $prev-flag, False;
+is $prev-arg, 'value';
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-bool', '--no-flag', 'value']);
+
+is $prev-flag, False;
+is $prev-arg, 'value';
+ok !$show-help-called;
+
+reset();
+
+App.new.run(['go-bool', '--noflag', '--node', 'value']);
+
+is $prev-flag, False;
+ok !$prev-arg.defined;
+is $prev-node, 'value';
 ok !$show-help-called;
 
 reset();
