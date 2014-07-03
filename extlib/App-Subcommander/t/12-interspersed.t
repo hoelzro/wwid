@@ -20,6 +20,8 @@ my class App does App::Subcommander {
 
 plan 5;
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 App.new.run(['cmd', '--name=Bob', 'Fred', '--age=10', 'Terry', '--male']);
 
 is $prev-name1, 'Fred';

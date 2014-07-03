@@ -26,6 +26,8 @@ my class App is App::Subcommander {
     }
 }
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 App.new.run(['has-aliases', '--name=Steve']);
 
 is $prev-name, 'Steve', 'sanity check';

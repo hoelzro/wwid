@@ -14,6 +14,8 @@ my class App does App::Subcommander {
     }
 }
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 throws_like({
     App.new.run(['exceptional']);
 }, CustomException);

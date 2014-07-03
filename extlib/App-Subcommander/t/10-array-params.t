@@ -30,6 +30,8 @@ my class App does App::Subcommander {
 
 plan 6;
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 App.new.run(['listy', 'test', '--names=Bob', '--names=Fred']);
 
 is $prev-arg, 'test';

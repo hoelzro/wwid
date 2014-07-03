@@ -5,6 +5,8 @@ use App::Subcommander;
 
 plan 3;
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 my $exception;
 
 try {

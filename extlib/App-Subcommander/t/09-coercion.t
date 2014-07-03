@@ -16,6 +16,8 @@ my class App does App::Subcommander {
 
 plan 1;
 
+my $*ERR = open(IO::Spec.devnull, :w);
+
 App.new.run(['coercing', '10']);
 
 ok $prev-value eqv 10, 'type coercion should be unaffected';
