@@ -42,6 +42,28 @@ my class TypeResolver {
     }
 }
 
+my class OptionCanonializer {
+    has %!canonical-names;
+
+    submethod BUILD(:&command) {
+        %!canonical-names = gather {
+            for &command.signature.params -> $param {
+                next unless $param.named;
+                next if $param.slurpy;
+
+                my $first-name = $param.named_names[0];
+                for $param.named_names -> $name {
+                    take $name => $first-name;
+                }
+            }
+        };
+    }
+
+    method canonicalize(Str $name) returns Str {
+        %!canonical-names{$name} // $name
+    }
+}
+
 our role App::Subcommander {
     method !is-option($arg) {
         $arg ~~ /^ '-'/
@@ -87,20 +109,6 @@ our role App::Subcommander {
         $value
     }
 
-    method !get-canonical-names($command) {
-        gather {
-            for $command.signature.params -> $param {
-                next unless $param.named;
-                next if $param.slurpy;
-
-                my $first-name = $param.named_names[0];
-                for $param.named_names -> $name {
-                    take $name => $first-name;
-                }
-            }
-        }
-    }
-
     method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
         my %command-options;
         my @command-args;
@@ -108,7 +116,7 @@ our role App::Subcommander {
         my @copy = @args;
 
         my $type-resolver;
-        my %canonical-names;
+        my $canonicalizer;
 
         while @copy {
             my $arg = @copy.shift;
@@ -125,7 +133,7 @@ our role App::Subcommander {
                     }
 
                     $type-resolver = TypeResolver.new(:command($subcommand));
-                    %canonical-names = self!get-canonical-names($subcommand);
+                    $canonicalizer = OptionCanonializer.new(:command($subcommand));
                 }
                 last;
             } elsif self!is-option($arg) {
@@ -147,7 +155,7 @@ our role App::Subcommander {
                         SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                 }
-                $name = %canonical-names{$name} // $name;
+                $name = $canonicalizer.canonicalize($name);
                 my $type = $type-resolver.typeof($name);
                 if $type-resolver.is-array($name) {
                     $type = $type.of;
@@ -167,7 +175,7 @@ our role App::Subcommander {
                         SubcommanderException.new("No such command '$arg'").throw;
                     }
                     $type-resolver = TypeResolver.new(:command($subcommand));
-                    %canonical-names = self!get-canonical-names($subcommand);
+                    $canonicalizer = OptionCanonializer.new(:command($subcommand));
                 }
             }
         }
