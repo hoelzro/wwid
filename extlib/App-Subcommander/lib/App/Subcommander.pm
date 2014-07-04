@@ -10,6 +10,22 @@ my class SubcommanderException is Exception {
     }
 }
 
+my class NoMoreValues is Exception {
+    method message { 'No more values' }
+}
+
+my class Option {
+    has $.content;
+
+    method Str { $.content }
+}
+
+my class Target {
+    has $.content;
+
+    method Str { $.content }
+}
+
 my class TypeResolver {
     has %!named;
     has @!positional;
@@ -64,12 +80,42 @@ my class OptionCanonializer {
     }
 }
 
-our role App::Subcommander {
-    method !is-option($arg) {
-        $arg ~~ /^ '-'/
+my class OptionParser {
+    has @!args;
+    has Bool $!seen-terminator = False;
+
+    submethod BUILD(:@!args) {}
+
+    method parse {
+        gather {
+            while @!args {
+                my $arg = @!args.shift;
+
+                if $!seen-terminator {
+                    take Target.new(:content($arg));
+                } else {
+                    if self!is-option-terminator($arg) {
+                        $!seen-terminator = True;
+                        next;
+                    } elsif self!is-option($arg) {
+                        take Option.new(:content($arg))
+                    } else {
+                        take Target.new(:content($arg))
+                    }
+                }
+            }
+        }
     }
 
-    method !parse-option($type-resolver, $arg) {
+    method !is-option($arg) {
+        $arg ~~ /^ '-'/ && !self!is-option-terminator($arg)
+    }
+
+    method !is-option-terminator($arg) returns Bool {
+        $arg eq '--'
+    }
+
+    method parse-option(TypeResolver $type-resolver, Str $arg) {
         my ( $key, $value ) =
             do if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
                 ( ~$<key>, ~$<value> )
@@ -88,10 +134,30 @@ our role App::Subcommander {
         ( $key, $value )
     }
 
-    method !is-option-terminator($arg) {
-        $arg eq '--'
+    method demand-value returns Str {
+        unless @!args {
+            NoMoreValues.new.throw
+        }
+
+        my $value = @!args.shift;
+
+        if $!seen-terminator {
+            $value
+        } else {
+            if self!is-option-terminator($value) {
+                $!seen-terminator = True;
+                self.demand-value
+            } elsif self!is-option($value) {
+                NoMoreValues.new.throw
+            } else {
+                $value
+            }
+        }
     }
 
+}
+
+our role App::Subcommander {
     method !fix-type($expected-type, $value is copy) {
         my $name = $expected-type.^name;
 
@@ -109,50 +175,28 @@ our role App::Subcommander {
         $value
     }
 
-    method !parse-command-line(@args) { # should be 'is copy', but I get an odd error
+    method !parse-command-line(@args) {
         my %command-options;
         my @command-args;
         my $subcommand;
-        my @copy = @args;
 
         my $type-resolver;
         my $canonicalizer;
+        my $parser = OptionParser.new(:@args);
 
-        while @copy {
-            my $arg = @copy.shift;
-
-            if self!is-option-terminator($arg) {
-                if $subcommand.defined {
-                    @command-args.push: @copy;
-                } else {
-                    my $name;
-                    ( $name, @command-args ) = @copy;
-                    $subcommand = self!get-commands(){$name};
-                    if $subcommand !~~ Subcommand {
-                        SubcommanderException.new("No such command '$name'").throw;
-                    }
-
-                    $type-resolver = TypeResolver.new(:command($subcommand));
-                    $canonicalizer = OptionCanonializer.new(:command($subcommand));
-                }
-                last;
-            } elsif self!is-option($arg) {
-                my ( $name, $value ) = self!parse-option($type-resolver, $arg);
+        for $parser.parse {
+            when Option {
+                my ( $name, $value ) = $parser.parse-option($type-resolver, ~$_);
 
                 unless $value.defined {
-                    unless @copy {
-                        SubcommanderException.new("Option '$name' requires a value").throw;
-                    }
-                    $value = @copy.shift;
-                    if self!is-option-terminator($value) {
-                        unless @copy {
-                            SubcommanderException.new("Option '$name' requires a value").throw;
+                    try {
+                        $value = $parser.demand-value;
+
+                        CATCH {
+                            when NoMoreValues {
+                                SubcommanderException.new("Option '$name' requires a value").throw;
+                            }
                         }
-                        $value = @copy.shift;
-                        @command-args.push: @copy;
-                        @copy = ();
-                    } elsif self!is-option($value) {
-                        SubcommanderException.new("Option '$name' requires a value").throw;
                     }
                 }
                 $name = $canonicalizer.canonicalize($name);
@@ -166,21 +210,25 @@ our role App::Subcommander {
                 } else {
                     %command-options{$name} = self!fix-type($type, $value);
                 }
-            } else {
+            }
+
+            when Target {
                 if $subcommand.defined {
-                    @command-args.push: self!fix-type($type-resolver.typeof(+@command-args), $arg);
+                    @command-args.push: self!fix-type($type-resolver.typeof(+@command-args), ~$_);
                 } else {
-                    $subcommand = self!get-commands(){$arg};
+                    $subcommand = self!get-commands(){~$_};
                     if $subcommand !~~ Subcommand {
-                        SubcommanderException.new("No such command '$arg'").throw;
+                        SubcommanderException.new("No such command '$_'").throw;
                     }
                     $type-resolver = TypeResolver.new(:command($subcommand));
                     $canonicalizer = OptionCanonializer.new(:command($subcommand));
                 }
             }
         }
+
         return ( $subcommand, @command-args.item, %command-options.item );
     }
+    
 
     method !get-commands {
         my %result;
