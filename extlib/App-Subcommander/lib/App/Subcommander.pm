@@ -53,7 +53,10 @@ my class TypeResolver {
         @!positional[$pos]
     }
 
-    multi method typeof(Str $name) {
+    multi method typeof(Str $name is copy) {
+        unless %!named{$name}:exists {
+            $name .= subst(/^ no '-'? /, '')
+        }
         %!named{$name}
     }
 }
@@ -75,7 +78,10 @@ my class OptionCanonializer {
         };
     }
 
-    method canonicalize(Str $name) returns Str {
+    method canonicalize(Str $name is copy) returns Str {
+        unless %!canonical-names{$name}:exists {
+            $name .= subst(/^ no '-'? /, '')
+        }
         %!canonical-names{$name} // $name
     }
 }
