@@ -10,12 +10,44 @@ my class SubcommanderException is Exception {
     }
 }
 
+my class TypeResolver {
+    has %!named;
+    has @!positional;
+
+    submethod BUILD(:&command) {
+        for &command.signature.params -> $param {
+            next if $param.invocant;
+            next if $param.slurpy;
+
+            if $param.named {
+                for $param.named_names -> $name {
+                    %!named{$name} = $param.type;
+                }
+            } else {
+                @!positional.push: $param.type;
+            }
+        }
+    }
+
+    method is-array(Str $name) returns Bool {
+        %!named{$name} ~~ Positional # XXX is ~~ the right test?
+    }
+
+    multi method typeof(Int $pos) {
+        @!positional[$pos]
+    }
+
+    multi method typeof(Str $name) {
+        %!named{$name}
+    }
+}
+
 our role App::Subcommander {
     method !is-option($arg) {
         $arg ~~ /^ '-'/
     }
 
-    method !parse-option($type-info, $arg) {
+    method !parse-option($type-resolver, $arg) {
         my ( $key, $value ) =
             do if $arg ~~ /^ '--' $<key>=(<-[=]>+) '=' $<value>=(.*) $/ {
                 ( ~$<key>, ~$<value> )
@@ -23,7 +55,7 @@ our role App::Subcommander {
                 ( $arg.substr(2), Str )
             };
 
-        if $type-info{$key} eqv Bool {
+        if $type-resolver.typeof($key) eqv Bool {
             if $value.defined {
                 SubcommanderException.new("Option '$key' is a flag, and thus doesn't take a value").throw;
             } else {
@@ -55,26 +87,6 @@ our role App::Subcommander {
         $value
     }
 
-    method !determine-type-info($command) {
-        my @positional;
-        my %named;
-
-        for $command.signature.params -> $param {
-            next if $param.invocant;
-            next if $param.slurpy;
-
-            if $param.named {
-                for $param.named_names -> $name {
-                    %named{$name} = $param.type;
-                }
-            } else {
-                @positional.push: $param.type;
-            }
-        }
-
-        ( @positional.item, %named.item )
-    }
-
     method !get-canonical-names($command) {
         gather {
             for $command.signature.params -> $param {
@@ -95,8 +107,7 @@ our role App::Subcommander {
         my $subcommand;
         my @copy = @args;
 
-        my $pos-type-info;
-        my $named-type-info;
+        my $type-resolver;
         my %canonical-names;
 
         while @copy {
@@ -112,12 +123,13 @@ our role App::Subcommander {
                     if $subcommand !~~ Subcommand {
                         SubcommanderException.new("No such command '$name'").throw;
                     }
-                    ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
+
+                    $type-resolver = TypeResolver.new(:command($subcommand));
                     %canonical-names = self!get-canonical-names($subcommand);
                 }
                 last;
             } elsif self!is-option($arg) {
-                my ( $name, $value ) = self!parse-option($named-type-info, $arg);
+                my ( $name, $value ) = self!parse-option($type-resolver, $arg);
 
                 unless $value.defined {
                     unless @copy {
@@ -136,23 +148,25 @@ our role App::Subcommander {
                     }
                 }
                 $name = %canonical-names{$name} // $name;
-                if $named-type-info{$name} ~~ Positional { # XXX is ~~ the right test?
+                my $type = $type-resolver.typeof($name);
+                if $type-resolver.is-array($name) {
+                    $type = $type.of;
                     unless %command-options{$name}:exists {
-                        %command-options{$name} = Array[$named-type-info{$name}.of].new;
+                        %command-options{$name} = Array[$type].new;
                     }
-                    %command-options{$name}.push: self!fix-type($named-type-info{$name}.of, $value);
+                    %command-options{$name}.push: self!fix-type($type, $value);
                 } else {
-                    %command-options{$name} = self!fix-type($named-type-info{$name}, $value);
+                    %command-options{$name} = self!fix-type($type, $value);
                 }
             } else {
                 if $subcommand.defined {
-                    @command-args.push: self!fix-type($pos-type-info[ +@command-args ], $arg);
+                    @command-args.push: self!fix-type($type-resolver.typeof(+@command-args), $arg);
                 } else {
                     $subcommand = self!get-commands(){$arg};
                     if $subcommand !~~ Subcommand {
                         SubcommanderException.new("No such command '$arg'").throw;
                     }
-                    ( $pos-type-info, $named-type-info ) = self!determine-type-info($subcommand);
+                    $type-resolver = TypeResolver.new(:command($subcommand));
                     %canonical-names = self!get-canonical-names($subcommand);
                 }
             }
