@@ -59,6 +59,26 @@ my class TypeResolver {
         }
         %!named{$name}
     }
+
+    proto method coerce($from, $to) { * }
+
+    multi method coerce(Str $from, Any:U $to) {
+        my $name = $to.^name;
+        my $value = $from;
+
+        if $from !~~ $to {
+            # $value = try $from."$name'(); didn't work, look into this
+            try {
+                $value = $from."$name"();
+                CATCH {
+                    default {
+                        SubcommanderException.new("Failed to convert '$from'").throw;
+                    }
+                }
+            }
+        }
+        $value
+    }
 }
 
 my class OptionCanonializer {
@@ -164,23 +184,6 @@ my class OptionParser {
 }
 
 our role App::Subcommander {
-    method !fix-type($expected-type, $value is copy) {
-        my $name = $expected-type.^name;
-
-        if $value !~~ $expected-type {
-            # $value = try $value."$name'(); didn't work, look into this
-            try {
-                $value = $value."$name"();
-                CATCH {
-                    default {
-                        SubcommanderException.new("Failed to convert '$value'").throw;
-                    }
-                }
-            }
-        }
-        $value
-    }
-
     method !parse-command-line(@args) {
         my %command-options;
         my @command-args;
@@ -212,15 +215,15 @@ our role App::Subcommander {
                     unless %command-options{$name}:exists {
                         %command-options{$name} = Array[$type].new;
                     }
-                    %command-options{$name}.push: self!fix-type($type, $value);
+                    %command-options{$name}.push: $type-resolver.coerce($value, $type);
                 } else {
-                    %command-options{$name} = self!fix-type($type, $value);
+                    %command-options{$name} = $type-resolver.coerce($value, $type);
                 }
             }
 
             when Target {
                 if $subcommand.defined {
-                    @command-args.push: self!fix-type($type-resolver.typeof(+@command-args), ~$_);
+                    @command-args.push: $type-resolver.coerce(~$_, $type-resolver.typeof(+@command-args));
                 } else {
                     $subcommand = self!get-commands(){~$_};
                     if $subcommand !~~ Subcommand {
