@@ -26,6 +26,12 @@ my class Target {
     method Str { $.content }
 }
 
+my class InvertedBool is Bool {
+    has $.value;
+
+    method Bool { !$.value }
+}
+
 my class TypeResolver {
     has %!named;
     has @!positional;
@@ -55,7 +61,11 @@ my class TypeResolver {
 
     multi method typeof(Str $name is copy) {
         unless %!named{$name}:exists {
-            $name .= subst(/^ no '-'? /, '')
+            $name .= subst(/^ no '-'? /, '');
+
+            if %!named{$name} ~~ Bool {
+                return InvertedBool;
+            }
         }
         %!named{$name}
     }
@@ -78,6 +88,10 @@ my class TypeResolver {
             }
         }
         $value
+    }
+
+    multi method coerce(Str $from, InvertedBool:U $to) {
+        !$from.Bool
     }
 }
 
@@ -149,7 +163,7 @@ my class OptionParser {
                 ( $arg.substr(2), Str )
             };
 
-        if $type-resolver.typeof($key) eqv Bool {
+        if $type-resolver.typeof($key) ~~ Bool {
             if $value.defined {
                 SubcommanderException.new("Option '$key' is a flag, and thus doesn't take a value").throw;
             } else {
@@ -208,8 +222,9 @@ our role App::Subcommander {
                         }
                     }
                 }
-                $name = $canonicalizer.canonicalize($name);
+                # type resolution must precede name canonicalization (due to things like --no-flag)
                 my $type = $type-resolver.typeof($name);
+                $name = $canonicalizer.canonicalize($name);
                 if $type-resolver.is-array($name) {
                     $type = $type.of;
                     unless %command-options{$name}:exists {
