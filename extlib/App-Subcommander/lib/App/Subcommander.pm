@@ -34,7 +34,7 @@ my class InvertedBool is Bool {
     method Bool { !$.value }
 }
 
-my class TypeResolver {
+our role TypeResolver {
     has %!named;
     has @!positional;
 
@@ -97,7 +97,7 @@ my class TypeResolver {
     }
 }
 
-my class OptionCanonializer {
+our role OptionCanonializer {
     has %!canonical-names;
 
     submethod BUILD(:&command) {
@@ -122,7 +122,7 @@ my class OptionCanonializer {
     }
 }
 
-my class OptionParser {
+our role OptionParser {
     has @!args;
     has Bool $!seen-terminator = False;
 
@@ -199,6 +199,10 @@ my class OptionParser {
 
 }
 
+our class DefaultTypeResolver does TypeResolver {}
+our class DefaultOptionCanonializer does OptionCanonializer {}
+our class DefaultOptionParser does OptionParser {}
+
 our role Application {
     method !parse-command-line(@args) {
         my %command-options;
@@ -207,7 +211,7 @@ our role Application {
 
         my $type-resolver;
         my $canonicalizer;
-        my $parser = OptionParser.new(:@args);
+        my $parser = DefaultOptionParser.new(:@args);
 
         for $parser.parse {
             when Option {
@@ -246,8 +250,8 @@ our role Application {
                     if $subcommand !~~ Subcommand {
                         SubcommanderException.new("No such command '$_'").throw;
                     }
-                    $type-resolver = TypeResolver.new(:command($subcommand));
-                    $canonicalizer = OptionCanonializer.new(:command($subcommand));
+                    $type-resolver = DefaultTypeResolver.new(:command($subcommand));
+                    $canonicalizer = DefaultOptionCanonializer.new(:command($subcommand));
                 }
             }
         }
