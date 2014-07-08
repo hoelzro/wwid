@@ -100,7 +100,7 @@ our role TypeResolver {
 our role OptionCanonicalizer {
     has %!canonical-names;
 
-    submethod BUILD(:&command) {
+    submethod BUILD(:&command!) {
         %!canonical-names = gather {
             for &command.signature.params -> $param {
                 next unless $param.named;
