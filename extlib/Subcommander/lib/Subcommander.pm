@@ -38,7 +38,7 @@ our role TypeResolver {
     has %!named;
     has @!positional;
 
-    submethod BUILD(:&command) {
+    submethod BUILD(:&command!) {
         for &command.signature.params -> $param {
             next if $param.invocant;
             next if $param.slurpy;
