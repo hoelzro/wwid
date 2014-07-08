@@ -260,6 +260,10 @@ our role Application {
             }
         }
 
+        unless $subcommand {
+            SubcommanderException.new('No command given').throw;
+        }
+
         return ( $subcommand, @command-args.item, %command-options.item );
     }
     
