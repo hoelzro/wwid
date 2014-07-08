@@ -25,18 +25,10 @@ App-Subcommander tests:
 Now:
 
   - show help (no command, bad command, help command w/o args)
-  - help with a command (cmd help $cmd)
-  - app options (--config preceding subcommand)
-  - type map stuff (Effort $e)
-  - Return value for run?
-  - short options (-s) (add-on role, automatic setup a separate add-on role)
-      - argument bundling (add-on role)
-  - What happens if I *don't* specify a subcommand?
-  - An unrecognized option prompts for a value if none is given (there should be a different error message)
-  - cmd foo -- -- bar # ['foo', '--', 'bar']
-  - Make TypeResolver and co into 'our' roles, make DefaultTypeResolver and friends
-  - Allow users to pass constructors for TypeResolver and such into BUILD
-  - If help wasn't expected, we should display any messages displayed
+  - help with a command (cmd help $cmd, what happens if I define my own help subcommand?)
+  - app options (--config preceding subcommand, can the app slurp extra options?)
+  - An unrecognized option prompts for a value if none is given (there should be a different error message, unless there's a slurpy hash)
+  - If help wasn't expected, we should display any messages displayed (in testing)
   - Figure out the relationship between the TypeResolver and canonical names...
   - The Bool check in parse-option should probably be something like "doesn't require value"
 
@@ -57,3 +49,5 @@ Extensions:
   - bash/zsh completion generation?
   - non-strict mode wrt. extra options
   - What if I want a default subcommand?
+  - short options (-s) (add-on role, automatic setup a separate add-on role)
+      - argument bundling (add-on role)
