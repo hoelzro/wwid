@@ -128,4 +128,12 @@ ok !$show-help-called;
 
 reset();
 
+App.new.run(['cmd', '--', '--', 'bar']); # make sure -- is treated regularly after it's been seen once
+
+is $prev-first, '--';
+is $prev-second, 'bar';
+ok !$show-help-called;
+
+reset();
+
 done();
