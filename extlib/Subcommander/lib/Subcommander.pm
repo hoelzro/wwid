@@ -204,6 +204,10 @@ our class DefaultOptionCanonicalizer does OptionCanonicalizer {}
 our class DefaultOptionParser does OptionParser {}
 
 our role Application {
+    method type-resolver(*@args, *%kwargs) { DefaultTypeResolver.new(|@args, |%kwargs) }
+    method option-parser(*@args, *%kwargs) { DefaultOptionParser.new(|@args, |%kwargs) }
+    method option-canonicalizer(*@args, *%kwargs) { DefaultOptionCanonicalizer.new(|@args, |%kwargs) }
+
     method !parse-command-line(@args) {
         my %command-options;
         my @command-args;
@@ -211,7 +215,7 @@ our role Application {
 
         my $type-resolver;
         my $canonicalizer;
-        my $parser = DefaultOptionParser.new(:@args);
+        my $parser = $.option-parser(:@args);
 
         for $parser.parse {
             when Option {
@@ -250,7 +254,7 @@ our role Application {
                     if $subcommand !~~ Subcommand {
                         SubcommanderException.new("No such command '$_'").throw;
                     }
-                    $type-resolver = DefaultTypeResolver.new(:command($subcommand));
+                    $type-resolver = $.type-resolver(:command($subcommand));
                     $canonicalizer = DefaultOptionCanonicalizer.new(:command($subcommand));
                 }
             }
