@@ -264,7 +264,7 @@ our role Application {
         my %result;
         for self.^methods -> $method {
             if +$method.candidates > 1 && any($method.candidates.map({ $_ ~~ Subcommand })) {
-                die "multis not yet supported by App::Subcommander";
+                die "multis not yet supported by Subcommander";
             }
             if $method ~~ Subcommand {
                 if %result{$method.command-name}:exists {
@@ -339,7 +339,7 @@ our role Application {
             my ( $command, $args, $cmd-options ) = self!parse-command-line(@args);
 
             if +$command.candidates > 1 {
-                die 'multis not yet supported by App::Subcommander';
+                die 'multis not yet supported by Subcommander';
             }
 
             self!check-args($command, $args, $cmd-options);

@@ -5,7 +5,7 @@ plan 4;
 
 # sanity checks to make sure the Perl 6 implementation we're running
 # on behaves as we expect.  If it doesn't, it doesn't mean that
-# App::Subcommander will break, but I want to know in case there
+# Subcommander will break, but I want to know in case there
 # are things I can improve upon or if there's potential for future
 # issues
 

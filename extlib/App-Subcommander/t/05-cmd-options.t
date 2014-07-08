@@ -1,7 +1,7 @@
 use v6;
 
 use Test;
-use App::Subcommander;
+use Subcommander;
 
 my $prev-name;
 my $prev-value;

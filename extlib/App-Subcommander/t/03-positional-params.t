@@ -1,7 +1,7 @@
 use v6;
 
 use Test;
-use App::Subcommander;
+use Subcommander;
 
 my Bool $needs3-called       = False;
 my Bool $has-optional-called = False;
