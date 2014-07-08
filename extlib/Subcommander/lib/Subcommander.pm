@@ -266,7 +266,6 @@ our role Application {
 
         return ( $subcommand, @command-args.item, %command-options.item );
     }
-    
 
     method !get-commands {
         my %result;
