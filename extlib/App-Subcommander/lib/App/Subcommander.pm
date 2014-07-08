@@ -97,7 +97,7 @@ our role TypeResolver {
     }
 }
 
-our role OptionCanonializer {
+our role OptionCanonicalizer {
     has %!canonical-names;
 
     submethod BUILD(:&command) {
@@ -200,7 +200,7 @@ our role OptionParser {
 }
 
 our class DefaultTypeResolver does TypeResolver {}
-our class DefaultOptionCanonializer does OptionCanonializer {}
+our class DefaultOptionCanonicalizer does OptionCanonicalizer {}
 our class DefaultOptionParser does OptionParser {}
 
 our role Application {
@@ -251,7 +251,7 @@ our role Application {
                         SubcommanderException.new("No such command '$_'").throw;
                     }
                     $type-resolver = DefaultTypeResolver.new(:command($subcommand));
-                    $canonicalizer = DefaultOptionCanonializer.new(:command($subcommand));
+                    $canonicalizer = DefaultOptionCanonicalizer.new(:command($subcommand));
                 }
             }
         }
