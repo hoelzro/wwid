@@ -18,7 +18,7 @@ sub reset {
     $prev-bool-flag   = Bool;
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method cmd($first, $second) is subcommand {
         $prev-first  = $first;
         $prev-second = $second;

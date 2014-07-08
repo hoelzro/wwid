@@ -1,3 +1,5 @@
+module Subcommander:auth<hoelzro>:ver<0.0.1>;
+
 my role Subcommand {
     has Str $.command-name is rw;
 }
@@ -197,7 +199,7 @@ my class OptionParser {
 
 }
 
-our role App::Subcommander {
+our role Application {
     method !parse-command-line(@args) {
         my %command-options;
         my @command-args;

@@ -8,7 +8,7 @@ plan 1;
 my class CustomException is Exception {
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method exceptional is subcommand {
         CustomException.new.throw;
     }

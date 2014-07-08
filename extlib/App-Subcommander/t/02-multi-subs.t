@@ -5,7 +5,7 @@ use App::Subcommander;
 
 plan 2;
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     multi method foo(Str $) is subcommand {}
 
     multi method foo(Int $) is subcommand {}

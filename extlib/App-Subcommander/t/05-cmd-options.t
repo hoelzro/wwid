@@ -21,7 +21,7 @@ sub reset {
     $show-help-called = False;
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method do-stuff(Str :$name = 'Bob') is subcommand {
         $prev-name = $name;
     }

@@ -8,7 +8,7 @@ my $prev-name;
 my $prev-age;
 my $prev-male;
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method cmd(Str $name1, Str $name2, Str :$name, Int :$age, Bool :$male = False) is subcommand {
         $prev-name1 = $name1;
         $prev-name2 = $name2;

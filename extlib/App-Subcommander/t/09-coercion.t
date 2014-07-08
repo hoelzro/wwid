@@ -8,7 +8,7 @@ sub reset {
     $prev-value = Int;
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method coercing(Str $value as Int) is subcommand {
         $prev-value = $value;
     }

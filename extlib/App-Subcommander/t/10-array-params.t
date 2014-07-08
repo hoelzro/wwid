@@ -11,7 +11,7 @@ sub reset {
     @prev-names = ();
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method listy(Str $arg, Str :@names) is subcommand {
         $prev-arg   = $arg;
         @prev-names = @names;

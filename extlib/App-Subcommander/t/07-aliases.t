@@ -12,7 +12,7 @@ sub reset {
     $prev-flag = Bool;
 }
 
-my class App is App::Subcommander {
+my class App does Subcommander::Application {
     method has-aliases(Str :pseudonym(:$name)) is subcommand {
         $prev-name = $name;
     }

@@ -19,7 +19,7 @@ sub reset {
     @previous-has-optional-args = ();
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method needs3(Str $one, Str $two, Str $three) is subcommand {
         @previous-needs3-args = ( $one, $two, $three );
         $needs3-called = True;

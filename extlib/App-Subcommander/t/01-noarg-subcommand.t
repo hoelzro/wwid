@@ -13,7 +13,7 @@ sub reset {
     $called-foo = $called-bar = $called-no_cmd = False;
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method foo is subcommand {
         $called-foo = True;
     }

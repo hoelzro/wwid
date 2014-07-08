@@ -22,7 +22,7 @@ my class ColorParseException is Exception {
     }
 }
 
-my class MyTypeResolver #`(does App::Subcommander::TypeResolver) {
+my class MyTypeResolver #`(does Subcommander::TypeResolver) {
     multi method coerce(Str $from, Color $to) {
         given $from {
             when 'red' {
@@ -58,7 +58,7 @@ sub reset {
     $previous-color = Any;
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method type-resolver { MyTypeResolver.new }
 
     method custom-type-pos(Color $color) is subcommand {

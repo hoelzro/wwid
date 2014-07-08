@@ -12,7 +12,7 @@ sub reset {
     %prev-rest = ();
 }
 
-my class App does App::Subcommander {
+my class App does Subcommander::Application {
     method slurpy-named(Str $name, *%rest) is subcommand {
         $prev-name = $name;
         %prev-rest = %rest;

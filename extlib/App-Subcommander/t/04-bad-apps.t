@@ -10,7 +10,7 @@ my $*ERR = open(IO::Spec.devnull, :w);
 my $exception;
 
 try {
-    my class App does App::Subcommander {
+    my class App does Subcommander::Application {
         method foo is subcommand('duplicate') {}
         method bar is subcommand('duplicate') {}
     }
@@ -25,7 +25,7 @@ ok $exception.defined, 'Trying to define duplicate command names should fail';
 $exception = Any;
 
 try {
-    my class App does App::Subcommander {
+    my class App does Subcommander::Application {
         method foo(Str @options) is subcommand {}
     }
 
@@ -42,7 +42,7 @@ try {
 $exception = Any;
 
 try {
-    my class App does App::Subcommander {
+    my class App does Subcommander::Application {
         method foo(Str %options) is subcommand {}
     }
 
