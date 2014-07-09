@@ -3,9 +3,10 @@ use Test;
 use Subcommander;
 
 my class App does Subcommander::Application {
-    # is option implies is rw
     has $.attr is option;
     has $!hidden;
+
+    has $.prev-opt is rw;
 
     method hidden { $!hidden }
 
@@ -13,7 +14,8 @@ my class App does Subcommander::Application {
         return-rw $!hidden
     }
 
-    method cmd() is subcommand {
+    method cmd(Str :$opt) is subcommand {
+        $.prev-opt = $opt;
     }
 }
 
@@ -31,11 +33,24 @@ $app.run(['--attr', 'foo', 'cmd']);
 
 is $app.attr, 'foo';
 ok !$app.hidden.defined;
+ok !$app.prev-opt.defined;
+
+$app = App.new;
+$app.run(['--attr', 'foo', '--rw-method', 'bar', 'cmd']);
+
+is $app.attr, 'foo';
+is $app.hidden, 'bar';
+ok !$app.prev-opt.defined;
+
+$app = App.new;
+$app.run(['--rw-method', 'bar', 'cmd', '--opt', 'value']);
+
+ok !$app.attr.defined;
+is $app.hidden, 'bar';
+is $app.prev-opt, 'value';
 
 done();
 
-# XXX mix with command options in the run invocation
-# XXX try is ro is option
 # XXX try conflicting with command options
 # XXX boolean options
 # XXX type coercion (Int, type map stuff)
@@ -43,3 +58,4 @@ done();
 # XXX slurpy options?
 # XXX list options
 # XXX unknown options
+# XXX is option('hello')
