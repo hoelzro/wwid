@@ -36,9 +36,6 @@ try {
 
 ok $exception.defined, 'Trying to define a command with a Positional positional paramater should fail';
 
-try {
-}
-
 $exception = Any;
 
 try {
