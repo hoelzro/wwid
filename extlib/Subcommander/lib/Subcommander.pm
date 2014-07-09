@@ -4,6 +4,10 @@ my role Subcommand {
     has Str $.command-name is rw;
 }
 
+my role AppOption {
+    has Str $.option-name is rw;
+}
+
 my class SubcommanderException is Exception {
     has Str $.message;
 
@@ -38,7 +42,7 @@ our role TypeResolver {
     has %!named;
     has @!positional;
 
-    submethod BUILD(:&command!) {
+    multi submethod BUILD(:&command!) {
         for &command.signature.params -> $param {
             next if $param.invocant;
             next if $param.slurpy;
@@ -49,6 +53,36 @@ our role TypeResolver {
                 }
             } else {
                 @!positional.push: $param.type;
+            }
+        }
+    }
+
+    multi submethod BUILD(::Application :$application) {
+        my %attribute-setters;
+
+        for $application.^attributes -> $attr {
+            if $attr ~~ AppOption {
+                my $name = $attr.name.subst(/^<[$@%&]> '!'/, '');
+                %attribute-setters{$name} = {
+                    :name($attr.option-name),
+                    :type($attr.type),
+                };
+            }
+        }
+
+        for $application.^methods -> $method {
+            if $method ~~ AppOption {
+                my $type = $method.returns;
+                if $type.WHERE == Mu.WHERE { # XXX dodgy
+                    $type = Any;
+                }
+                %!named{$method.option-name} = $type;
+            } elsif my $info = %attribute-setters{$method.name} {
+                my $type = $info<type>;
+                if $type.WHERE == Mu.WHERE {
+                    $type = Any;
+                }
+                %!named{$info<name>} = $type;
             }
         }
     }
@@ -100,7 +134,7 @@ our role TypeResolver {
 our role OptionCanonicalizer {
     has %!canonical-names;
 
-    submethod BUILD(:&command!) {
+    multi submethod BUILD(:&command!) {
         %!canonical-names = gather {
             for &command.signature.params -> $param {
                 next unless $param.named;
@@ -112,6 +146,24 @@ our role OptionCanonicalizer {
                 }
             }
         };
+    }
+
+    multi submethod BUILD(::Application :$application) {
+        my %attribute-setters;
+        for $application.^attributes -> $attr {
+            if $attr ~~ AppOption {
+                my $name = $attr.name.subst(/^<[$@%&]> '!'/, '');
+                %attribute-setters{$name} = $attr.option-name;
+            }
+        }
+
+        for $application.^methods -> $method {
+            if $method ~~ AppOption {
+                %!canonical-names{$method.option-name} = $method.name;
+            } elsif my $name = %attribute-setters{$method.name} {
+                %!canonical-names{$name} = $method.name;
+            }
+        }
     }
 
     method canonicalize(Str $name is copy) returns Str {
@@ -213,8 +265,8 @@ our role Application {
         my @command-args;
         my $subcommand;
 
-        my $type-resolver;
-        my $canonicalizer;
+        my $type-resolver = $.type-resolver(:application(self));
+        my $canonicalizer = $.option-canonicalizer(:application(self));
         my $parser = $.option-parser(:@args);
 
         for $parser.parse {
@@ -235,14 +287,19 @@ our role Application {
                 # type resolution must precede name canonicalization (due to things like --no-flag)
                 my $type = $type-resolver.typeof($name);
                 $name = $canonicalizer.canonicalize($name);
-                if $type-resolver.is-array($name) {
-                    $type = $type.of;
-                    unless %command-options{$name}:exists {
-                        %command-options{$name} = Array[$type].new;
+
+                if $subcommand.defined {
+                    if $type-resolver.is-array($name) {
+                        $type = $type.of;
+                        unless %command-options{$name}:exists {
+                            %command-options{$name} = Array[$type].new;
+                        }
+                        %command-options{$name}.push: $type-resolver.coerce($value, $type);
+                    } else {
+                        %command-options{$name} = $type-resolver.coerce($value, $type);
                     }
-                    %command-options{$name}.push: $type-resolver.coerce($value, $type);
                 } else {
-                    %command-options{$name} = $type-resolver.coerce($value, $type);
+                    self."$name"() = $type-resolver.coerce($value, $type);
                 }
             }
 
@@ -376,4 +433,23 @@ multi trait_mod:<is>(Routine $r, :subcommand($name)! is copy) is export {
     }
     $r does Subcommand;
     $r.command-name = $name;
+}
+
+multi trait_mod:<is>(Routine $r, :option($name)! is copy) is export {
+    if $name ~~ Bool {
+        $name = $r.name;
+    }
+
+    $r does AppOption;
+    $r.set_rw();
+    $r.option-name = $name;
+}
+
+multi trait_mod:<is>(Attribute $a, :option($name)! is copy) is export {
+    if $name ~~ Bool {
+        $name = $a.name.subst(/^<[$@%&]> '!'/, '');
+    }
+    $a does AppOption;
+    $a.set_rw();
+    $a.option-name = $name;
 }
