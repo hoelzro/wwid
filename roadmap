@@ -34,6 +34,8 @@ Now:
 
 Later:
 
+  - Document how 'is ro' and 'is option' don't mix
+  - Document how 'is option' implies 'is rw'
   - Document how slurpies all share the same type
   - Should we worry if a non-Str is passed to run?
   - What if command and app options clash?
