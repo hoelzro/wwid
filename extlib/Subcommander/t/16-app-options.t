@@ -113,6 +113,28 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 
+$app = App.new;
+$app.run(['--flag', '--inty', 'foo', 'argh', 'arg']);
+
+ok $app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok $app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+
+$app = App.new;
+$app.run(['--inty', 'foo', '--flag', 'argh', 'arg']);
+
+ok $app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+
 done();
 
 # XXX try conflicting with command options
@@ -122,4 +144,3 @@ done();
 # XXX list options
 # XXX unknown options
 # XXX is option('hello')
-# XXX demonstrate that --flag --inty problem will set --flag
