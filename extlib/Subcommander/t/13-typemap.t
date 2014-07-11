@@ -59,6 +59,8 @@ sub reset {
 }
 
 my class App does Subcommander::Application {
+    has Color $.base-color is option;
+
     method type-resolver(*@args, *%kwargs) { MyTypeResolver.new(|@args, |%kwargs) }
 
     method custom-type-pos(Color $color) is subcommand {
@@ -85,6 +87,12 @@ App.new.run(['custom-type-named', '--color=green']);
 ok $previous-color eqv Color.new(:g(255));
 
 reset();
+
+my $app = App.new;
+$app.run(['--base-color', 'blue', 'custom-type-named']);
+
+ok !$previous-color.defined;
+ok $app.base-color eqv Color.new(:b(255));
 
 done();
 

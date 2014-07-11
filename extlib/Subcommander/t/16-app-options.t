@@ -138,7 +138,6 @@ ok !$app.prev-arg.defined;
 done();
 
 # XXX try conflicting with command options
-# XXX type coercion (type map stuff)
 # XXX aliases? (methods that assign to the same attr)
 # XXX slurpy options?
 # XXX list options
