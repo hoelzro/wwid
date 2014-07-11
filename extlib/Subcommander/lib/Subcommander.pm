@@ -202,7 +202,7 @@ our role OptionParser {
     }
 
     method !is-option($arg) {
-        $arg ~~ /^ '-'/ && !self!is-option-terminator($arg)
+        $arg ~~ /^ '--'/ && !self!is-option-terminator($arg)
     }
 
     method !is-option-terminator($arg) returns Bool {
