@@ -299,7 +299,16 @@ our role Application {
                         %command-options{$name} = $type-resolver.coerce($value, $type);
                     }
                 } else {
-                    self."$name"() = $type-resolver.coerce($value, $type);
+                    if $type-resolver.is-array($name) {
+                        $type = $type.of;
+                        if $type.WHERE == Mu.WHERE { # XXX dodgy
+                            $type = Any;
+                        }
+                        # XXX we're assuming it's something that supports push
+                        self."$name"().push: $type-resolver.coerce($value, $type);
+                    } else {
+                        self."$name"() = $type-resolver.coerce($value, $type);
+                    }
                 }
             }
 
