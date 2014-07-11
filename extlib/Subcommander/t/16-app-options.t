@@ -7,6 +7,7 @@ my class App does Subcommander::Application {
     has $!hidden;
     has Bool $.flag is option = False;
     has Int $.inty is option;
+    has @.listy is option;
 
     has $.prev-opt is rw;
     has $.prev-arg is rw;
@@ -20,6 +21,12 @@ my class App does Subcommander::Application {
 
     method rw-method is option {
         return-rw $!hidden
+    }
+
+    # XXX should 'returns Positional' be necessary?
+    method listy-alias returns Positional is option {
+        say("returning listy; it's currently @!listy[]");
+        return-rw @!listy
     }
 
     method cmd(Str :$opt) is subcommand {
@@ -50,6 +57,7 @@ ok !$app.hidden.defined;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--attr', 'foo', 'cmd']);
@@ -61,6 +69,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--attr', 'foo', '--rw-method', 'bar', 'cmd']);
@@ -72,6 +81,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--rw-method', 'bar', 'cmd', '--opt', 'value']);
@@ -83,6 +93,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 is $app.prev-opt, 'value';
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--flag', 'argh', 'arg']);
@@ -94,6 +105,7 @@ ok $app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 is $app.prev-arg, 'arg';
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--inty', '10', 'argh', 'arg']);
@@ -105,6 +117,7 @@ ok !$app.flag;
 ok $app.inty eqv 10;
 ok !$app.prev-opt.defined;
 is $app.prev-arg, 'arg';
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--inty', 'foo', 'argh', 'arg']);
@@ -116,6 +129,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--flag', '--inty', 'foo', 'argh', 'arg']);
@@ -127,6 +141,7 @@ ok $app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--inty', 'foo', '--flag', 'argh', 'arg']);
@@ -138,6 +153,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--attr-alias', 'foo', 'cmd']);
@@ -149,6 +165,7 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
 
 $app = App.new;
 $app.run(['--attr-alias', 'foo', '--attr', 'bar', 'cmd']);
@@ -160,11 +177,47 @@ ok !$app.flag;
 ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+
+$app = App.new;
+$app.run(['--listy', 'foo', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, ['foo'];
+
+$app = App.new;
+$app.run(['--listy', 'foo', '--listy', 'bar', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [<foo bar>];
+
+$app = App.new;
+$app.run(['--listy', 'foo', '--listy-alias', 'bar', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [<foo bar>];
 
 done();
 
 # XXX try conflicting with command options
 # XXX slurpy options?
-# XXX list options
 # XXX unknown options
 # XXX is option('hello')
