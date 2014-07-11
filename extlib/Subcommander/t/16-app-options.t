@@ -14,6 +14,10 @@ my class App does Subcommander::Application {
 
     method hidden { $!hidden }
 
+    method attr-alias is option {
+        return-rw $!attr
+    }
+
     method rw-method is option {
         return-rw $!hidden
     }
@@ -135,10 +139,31 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 
+$app = App.new;
+$app.run(['--attr-alias', 'foo', 'cmd']);
+
+ok !$app.showed-help;
+is $app.attr, 'foo';
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+
+$app = App.new;
+$app.run(['--attr-alias', 'foo', '--attr', 'bar', 'cmd']);
+
+ok !$app.showed-help;
+is $app.attr, 'bar';
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+
 done();
 
 # XXX try conflicting with command options
-# XXX aliases? (methods that assign to the same attr)
 # XXX slurpy options?
 # XXX list options
 # XXX unknown options
