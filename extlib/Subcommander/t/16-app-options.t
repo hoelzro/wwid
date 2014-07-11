@@ -221,3 +221,5 @@ done();
 # XXX slurpy options?
 # XXX unknown options
 # XXX is option('hello')
+# XXX returns Any alias for Int option
+# XXX returns Str alias for Int option
