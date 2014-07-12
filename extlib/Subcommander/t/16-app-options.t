@@ -38,6 +38,10 @@ my class App does Subcommander::Application {
     method show-help {
         $.showed-help = True;
     }
+
+    method dont-call-me {
+        die "You shouldn't call me!";
+    }
 }
 
 plan *;
@@ -215,6 +219,18 @@ is_deeply $app.listy, [<foo bar>];
 
 $app = App.new;
 $app.run(['--unknown', 'foo', 'cmd']);
+
+ok $app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+
+$app = App.new;
+$app.run(['--dont-call-me', 'foo', 'cmd']);
 
 ok $app.showed-help;
 ok !$app.attr.defined;
