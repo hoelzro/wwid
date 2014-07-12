@@ -299,15 +299,22 @@ our role Application {
                         %command-options{$name} = $type-resolver.coerce($value, $type);
                     }
                 } else {
-                    if $type-resolver.is-array($name) {
+                    my $container := self."$name"();
+                    $type          = $container.VAR;
+
+                    if $type ~~ Positional { # XXX is this the right test?
                         $type = $type.of;
                         if $type.WHERE == Mu.WHERE { # XXX dodgy
                             $type = Any;
                         }
                         # XXX we're assuming it's something that supports push
-                        self."$name"().push: $type-resolver.coerce($value, $type);
+                        $container.push: $type-resolver.coerce($value, $type);
                     } else {
-                        self."$name"() = $type-resolver.coerce($value, $type);
+                        $type = $type.of;
+                        if $type.WHERE == Mu.WHERE { # XXX dodgy
+                            $type = Any;
+                        }
+                        $container = $type-resolver.coerce($value, $type);
                     }
                 }
             }

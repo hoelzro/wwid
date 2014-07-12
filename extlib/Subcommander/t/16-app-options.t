@@ -23,9 +23,7 @@ my class App does Subcommander::Application {
         return-rw $!hidden
     }
 
-    # XXX should 'returns Positional' be necessary?
-    method listy-alias returns Positional is option {
-        say("returning listy; it's currently @!listy[]");
+    method listy-alias is option {
         return-rw @!listy
     }
 
