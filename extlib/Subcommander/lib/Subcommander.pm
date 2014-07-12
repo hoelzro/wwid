@@ -292,9 +292,9 @@ our role Application {
                 }
                 # type resolution must precede name canonicalization (due to things like --no-flag)
                 my $type = $type-resolver.typeof($name);
-                $name = $canonicalizer.canonicalize($name);
 
                 if $subcommand.defined {
+                    $name = $canonicalizer.canonicalize($name);
                     if $type-resolver.is-array($name) {
                         $type = $type.of;
                         unless %command-options{$name}:exists {
@@ -308,6 +308,7 @@ our role Application {
                     unless self!is-valid-app-option($name) {
                         SubcommanderException.new("Unrecognized option '$name'").throw;
                     }
+                    $name = $canonicalizer.canonicalize($name);
 
                     my $container := self."$name"();
                     $type          = $container.VAR;
