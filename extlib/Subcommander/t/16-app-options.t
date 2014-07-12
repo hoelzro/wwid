@@ -213,11 +213,22 @@ ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [<foo bar>];
 
+$app = App.new;
+$app.run(['--unknown', 'foo', 'cmd']);
+
+ok $app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+
 done();
 
 # XXX try conflicting with command options
 # XXX slurpy options?
-# XXX unknown options
 # XXX is option('hello')
 # XXX returns Any alias for Int option
 # XXX returns Str alias for Int option
