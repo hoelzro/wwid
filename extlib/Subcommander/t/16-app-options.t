@@ -8,6 +8,8 @@ my class App does Subcommander::Application {
     has Bool $.flag is option = False;
     has Int $.inty is option;
     has @.listy is option;
+    has $.bad-name is option('good-name');
+    has $!bad-hidden-name;
 
     has $.prev-opt is rw;
     has $.prev-arg is rw;
@@ -26,6 +28,12 @@ my class App does Subcommander::Application {
     method listy-alias is option {
         return-rw @!listy
     }
+
+    method bad-hidden-name is option('good-hidden-name') {
+        return-rw $!bad-hidden-name
+    }
+
+    method good-hidden-name { $!bad-hidden-name }
 
     method cmd(Str :$opt) is subcommand {
         $.prev-opt = $opt;
@@ -60,6 +68,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--attr', 'foo', 'cmd']);
@@ -72,6 +82,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--attr', 'foo', '--rw-method', 'bar', 'cmd']);
@@ -84,6 +96,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--rw-method', 'bar', 'cmd', '--opt', 'value']);
@@ -96,6 +110,8 @@ ok !$app.inty.defined;
 is $app.prev-opt, 'value';
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--flag', 'argh', 'arg']);
@@ -108,6 +124,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 is $app.prev-arg, 'arg';
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--inty', '10', 'argh', 'arg']);
@@ -120,6 +138,8 @@ ok $app.inty eqv 10;
 ok !$app.prev-opt.defined;
 is $app.prev-arg, 'arg';
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--inty', 'foo', 'argh', 'arg']);
@@ -132,6 +152,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--flag', '--inty', 'foo', 'argh', 'arg']);
@@ -144,6 +166,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--inty', 'foo', '--flag', 'argh', 'arg']);
@@ -156,6 +180,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--attr-alias', 'foo', 'cmd']);
@@ -168,6 +194,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--attr-alias', 'foo', '--attr', 'bar', 'cmd']);
@@ -180,6 +208,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--listy', 'foo', 'cmd']);
@@ -192,6 +222,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, ['foo'];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--listy', 'foo', '--listy', 'bar', 'cmd']);
@@ -204,6 +236,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [<foo bar>];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--listy', 'foo', '--listy-alias', 'bar', 'cmd']);
@@ -216,6 +250,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [<foo bar>];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--unknown', 'foo', 'cmd']);
@@ -228,6 +264,8 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
 
 $app = App.new;
 $app.run(['--dont-call-me', 'foo', 'cmd']);
@@ -240,11 +278,40 @@ ok !$app.inty.defined;
 ok !$app.prev-opt.defined;
 ok !$app.prev-arg.defined;
 is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
+
+$app = App.new;
+$app.run(['--good-name', 'foo', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+is $app.bad-name, 'foo';
+ok !$app.good-hidden-name.defined;
+
+$app = App.new;
+$app.run(['--good-hidden-name', 'bar', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok !$app.flag;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+is $app.good-hidden-name, 'bar';
 
 done();
 
 # XXX try conflicting with command options
 # XXX slurpy options?
-# XXX is option('hello')
 # XXX returns Any alias for Int option
 # XXX returns Str alias for Int option
