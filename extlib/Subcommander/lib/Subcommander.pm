@@ -260,6 +260,12 @@ our role Application {
     method option-parser(*@args, *%kwargs) { DefaultOptionParser.new(|@args, |%kwargs) }
     method option-canonicalizer(*@args, *%kwargs) { DefaultOptionCanonicalizer.new(|@args, |%kwargs) }
 
+    method !is-valid-app-option(Str $name) returns Bool {
+        my @candidates = (self.^methods, self.^attributes).grep({ $_ ~~ AppOption });
+
+        ?@candidates.first(*.option-name eq $name)
+    }
+
     method !parse-command-line(@args) {
         my %command-options;
         my @command-args;
@@ -299,6 +305,10 @@ our role Application {
                         %command-options{$name} = $type-resolver.coerce($value, $type);
                     }
                 } else {
+                    unless self!is-valid-app-option($name) {
+                        SubcommanderException.new("Unrecognized option '$name'").throw;
+                    }
+
                     my $container := self."$name"();
                     $type          = $container.VAR;
 
