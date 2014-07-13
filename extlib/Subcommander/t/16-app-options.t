@@ -313,5 +313,3 @@ done();
 
 # XXX try conflicting with command options
 # XXX slurpy options?
-# XXX returns Any alias for Int option
-# XXX returns Str alias for Int option
