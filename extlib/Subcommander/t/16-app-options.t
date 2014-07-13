@@ -309,6 +309,21 @@ is_deeply $app.listy, [];
 ok !$app.bad-name.defined;
 is $app.good-hidden-name, 'bar';
 
+$app = App.new;
+$app.flag = True;
+$app.run(['--noflag', 'cmd']);
+
+ok !$app.showed-help;
+ok !$app.attr.defined;
+ok !$app.hidden.defined;
+ok $app.flag eqv False;
+ok !$app.inty.defined;
+ok !$app.prev-opt.defined;
+ok !$app.prev-arg.defined;
+is_deeply $app.listy, [];
+ok !$app.bad-name.defined;
+ok !$app.good-hidden-name.defined;
+
 done();
 
 # XXX try conflicting with command options
