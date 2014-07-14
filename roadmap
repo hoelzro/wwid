@@ -26,7 +26,6 @@ Now:
 
   - show help (no command, bad command, help command w/o args)
   - help with a command (cmd help $cmd, what happens if I define my own help subcommand?)
-  - app options (--config preceding subcommand, can the app slurp extra options?)
   - An unrecognized option prompts for a value if none is given (there should be a different error message, unless there's a slurpy hash)
   - If help wasn't expected, we should display any messages displayed (in testing)
   - Figure out the relationship between the TypeResolver and canonical names...
@@ -38,11 +37,11 @@ Later:
   - Document how 'is option' implies 'is rw'
   - Document how slurpies all share the same type
   - Should we worry if a non-Str is passed to run?
-  - What if command and app options clash?
   - What if a subcommand nextsame's its parent?  pos/named args?
   - how will --config work (if I have something like --interactive?)
   - what if the value for an option is optional? (ex. --password)
   - multis
+  - slurpy app options
 
 Extensions:
 
