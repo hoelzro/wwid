@@ -260,10 +260,17 @@ our role Application {
     method option-parser(*@args, *%kwargs) { DefaultOptionParser.new(|@args, |%kwargs) }
     method option-canonicalizer(*@args, *%kwargs) { DefaultOptionCanonicalizer.new(|@args, |%kwargs) }
 
-    method !is-valid-app-option(Str $name) returns Bool {
-        my @candidates = (self.^methods, self.^attributes).grep({ $_ ~~ AppOption });
+    my sub extract-attr-name(Str $name --> Str) {
+        $name.subst(/^<[$@%&]> '!'/, '')
+    }
 
-        ?@candidates.first(*.option-name eq $name)
+    method !is-valid-app-option(Str $name) returns Bool {
+        my @names = (
+            self.^methods.grep({ $_ ~~ AppOption }).map(*.name),
+            self.^attributes.grep({ $_ ~~ AppOption }).map({ extract-attr-name(.name) }),
+        );
+
+        ?@names.first(* eq $name)
     }
 
     method !parse-command-line(@args) {
@@ -292,9 +299,9 @@ our role Application {
                 }
                 # type resolution must precede name canonicalization (due to things like --no-flag)
                 my $type = $type-resolver.typeof($name);
+                $name = $canonicalizer.canonicalize($name);
 
                 if $subcommand.defined {
-                    $name = $canonicalizer.canonicalize($name);
                     if $type-resolver.is-array($name) {
                         $type = $type.of;
                         unless %command-options{$name}:exists {
@@ -308,7 +315,6 @@ our role Application {
                     unless self!is-valid-app-option($name) {
                         SubcommanderException.new("Unrecognized option '$name'").throw;
                     }
-                    $name = $canonicalizer.canonicalize($name);
 
                     my $container := self."$name"();
                     $type          = $container.VAR;
