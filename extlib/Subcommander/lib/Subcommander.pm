@@ -316,21 +316,17 @@ our role Application {
                         SubcommanderException.new("Unrecognized option '$name'").throw;
                     }
 
-                    my $container := self."$name"();
-                    $type          = $container.VAR;
+                    my $container     := self."$name"();
+                    my $container-type = $container.VAR;
 
-                    if $type ~~ Positional { # XXX is this the right test?
-                        $type = $type.of;
+                    if $container-type ~~ Positional { # XXX is this the right test?
+                        $type = $container-type.of;
                         if $type.WHERE == Mu.WHERE { # XXX dodgy
                             $type = Any;
                         }
                         # XXX we're assuming it's something that supports push
                         $container.push: $type-resolver.coerce($value, $type);
                     } else {
-                        $type = $type.of;
-                        if $type.WHERE == Mu.WHERE { # XXX dodgy
-                            $type = Any;
-                        }
                         $container = $type-resolver.coerce($value, $type);
                     }
                 }
