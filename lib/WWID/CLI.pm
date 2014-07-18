@@ -1,9 +1,9 @@
-use App::Subcommander;
+use Subcommander;
 
 my class Effort {
 }
 
-class WWID::CLI does App::Subcommander {
+class WWID::CLI does Subcommander::Application {
     method new_task(Str :$name!, Effort :$effort!) is subcommand('new') {
     }
 

@@ -4,7 +4,7 @@
     "description": "A todo list manager that tells you what to do",
     "author": "Rob Hoelz",
     "depends": [
-        'App-Subcommander'
+        'Subcommander'
     ],
     "source-url": "git://github.com/hoelzro/wwid"
 }
