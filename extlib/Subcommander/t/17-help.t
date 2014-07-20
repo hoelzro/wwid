@@ -17,6 +17,18 @@ my class App does Subcommander::Application {
     }
 }
 
+my $help;
+
+$help = collect-help(App.new, {
+    $^app.run([]);
+});
+
+is $help, qq:to/END_HELP/;
+Usage: App [command]
+
+good-cmd	Does good things.
+END_HELP
+
 # non-existing command
 # non-existing option
 # bad parse for option
