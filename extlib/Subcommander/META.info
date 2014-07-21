@@ -3,6 +3,8 @@
     "version": "0.1.0",
     "description": "A module for making subcommand-based CLIs easier",
     "author": "Rob Hoelz",
-    "depends": [],
+    "depends": {
+        "IO::String": "0.1.0"
+    },
     "source-url": "git://github.com/hoelzro/Subcommander"
 }
