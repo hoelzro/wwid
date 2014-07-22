@@ -11,9 +11,13 @@ my role AppOption {
 my class SubcommanderException is Exception {
     has Str $.message;
 
-    method new(Str $message) {
+    method new(Str $message?) {
         self.bless(:$message);
     }
+}
+
+my class NoCommandGiven is SubcommanderException {
+    method message { 'No command given' }
 }
 
 my class NoMoreValues is Exception {
@@ -347,7 +351,7 @@ our role Application {
         }
 
         unless $subcommand {
-            SubcommanderException.new('No command given').throw;
+            NoCommandGiven.new.throw;
         }
 
         return ( $subcommand, @command-args.item, %command-options.item );
@@ -443,7 +447,9 @@ our role Application {
 
             CATCH {
                 when SubcommanderException {
-                    $*ERR.say: $_.message;
+                    unless $_ ~~ NoCommandGiven {
+                        $*ERR.say: $_.message;
+                    }
                     self.show-help;
                     return 1;
                 }
