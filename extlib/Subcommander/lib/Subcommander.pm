@@ -458,7 +458,16 @@ our role Application {
     }
 
     method show-help {
-        $*ERR.say: 'showing help!';
+        $*ERR.say: "Usage: $*PROGRAM_NAME [command]";
+        my %commands    = %(self!get-commands);
+        my $max-cmd-len = [max] %commands.keys>>.chars; # XXX graphemes?
+        my $format      = "%{$max-cmd-len}s\t%s";
+
+        for %commands.keys.sort -> $name {
+            my $command = %commands{$name};
+            my $description = ~$command.WHY // '';
+            $*ERR.say: sprintf($format, $name, $description);
+        }
     }
 }
 
