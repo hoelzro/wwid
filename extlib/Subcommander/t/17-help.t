@@ -11,6 +11,7 @@ sub collect-help($app, &action) {
     return ~$*ERR;
 }
 
+# XXX class comment?
 my class App does Subcommander::Application {
     #| Does good things.  They may come to you if you wait!
     #| Batteries not included.
@@ -26,6 +27,8 @@ my class App does Subcommander::Application {
     }
 }
 
+my $*PROGRAM_NAME = 'App';
+
 my $TOP_LEVEL_HELP = qq:to/END_HELP/;
 Usage: App [command]
 
@@ -38,7 +41,7 @@ $help = collect-help(App.new, {
     $^app.run([]);
 });
 
-is $help, $TOP_LEVEL_HELP or diag($help);
+is $help, $TOP_LEVEL_HELP;
 
 #$help = collect-help(App.new, {
     #$^app.run(['--help']);
