@@ -21,4 +21,8 @@ class WWID::CLI does Subcommander::Application {
     #| Recalculates the value for tasks that need it
     method recalcuate() is subcommand {
     }
+
+    #| Imports a CSV of existing tasks
+    method import() is subcommand {
+    }
 }
