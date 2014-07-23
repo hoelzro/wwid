@@ -7,6 +7,7 @@
   wwid help
   wwid import
   value - effort algorithm
+  automatic prompting for recalculation
 
 Later
 
@@ -31,6 +32,9 @@ Now:
   - Figure out the relationship between the TypeResolver and canonical names...
   - The Bool check in parse-option should probably be something like "doesn't require value"
   - What happens if they don't provide any subcommands?
+  - Inheritance of commands/app options, overriding, etc
+      - What happens if I override a non-subcommand with a subcommand? vice versa?
+  - docs
 
 Later:
 
