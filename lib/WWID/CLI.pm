@@ -6,7 +6,10 @@ my class Effort {
 
 class WWID::CLI does Subcommander::Application {
     #| Creates a new task
-    method new_task(Str :$name!, Effort :$effort!) is subcommand('new') {
+    method new_task(
+        Str :$name!,     #= The name for the task
+        Effort :$effort! #= The estimated amount of effort it will take
+    ) is subcommand('new') {
     }
 
     #| Asks wwid for something new to work on
